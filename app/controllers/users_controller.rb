@@ -81,7 +81,8 @@ class UsersController < ApplicationController
 		end
 
 		# Redisplay the events page.
-		view_events
+		# TODO: update with redirect
+		redirect_to :action => 'view_events'
 		return
 	end
 
