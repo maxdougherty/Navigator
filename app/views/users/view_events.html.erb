@@ -7,8 +7,8 @@
 	<div>
 		<p>Event #<%= index + 1 %><br>
 		Title: <%= e.title %><br>
-		Start Time: <%= e.start_time %><br>
-		End Time: <%= e.end_time %>
+		Start Time: <%= (e.start_time-(e.start_time%100))/100 %>:<%if(e.start_time % 100)<10%>0<%end%><%= (e.start_time % 100) %><br>
+		End Time: <%= (e.end_time-(e.end_time%100))/100 %>:<%if(e.start_time % 100)<10%>0<%end%><%= (e.end_time % 100) %><br>
 		<%= form_tag("/users/delete_event", method: "post") do %>
 			<%= hidden_field_tag(:event_id, e.id) %>
 			<%= submit_tag("Delete Event") %>
