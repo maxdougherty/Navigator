@@ -1,0 +1,19 @@
+<h1>Your Events</h1>
+
+
+<%= link_to 'Add New Event!', '/users/add_event' %>
+
+<% @user_events.each_with_index do |e, index| %>
+	<div>
+		<p>Event #<%= index + 1 %><br>
+		Title: <%= e.title %><br>
+		Start Time: <%= e.start_time %><br>
+		End Time: <%= e.end_time %>
+		<%= form_tag("/users/delete_event", method: "post") do %>
+			<%= hidden_field_tag(:event_id, e.id) %>
+			<%= submit_tag("Delete Event") %>
+		<% end %></p>
+	</div>
+<% end %>
+
+
