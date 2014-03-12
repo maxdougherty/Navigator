@@ -66,7 +66,7 @@ class UsersController < ApplicationController
 		current_user.events.create(title: title, start_time: start_time, end_time: end_time)
 
 		# After successful event creation, render view of all user events
-		view_events
+		redirect_to :action => 'view_events'
 		return
 
 	end
