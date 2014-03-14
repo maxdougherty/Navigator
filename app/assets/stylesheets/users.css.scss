@@ -28,7 +28,8 @@ textarea {
   display: inline-block;*/
   display: table;
   margin: auto;
-  
+  width:300px;
+
 }
 
 /*.center h1 {
@@ -43,6 +44,44 @@ textarea {
 	text-align:left;
 }
 
-.center h1 {
+.center h2 {
 	text-align:center;
+}
+
+
+#user_email {
+	width:100%;
+}
+
+#user_password {
+	width:100%;
+}
+#user_password_confirmation {
+	width:100%;
+}
+
+.input-field {
+	width:100%;
+}
+
+.event_list {
+	width:100%;
+}
+
+.event_actions {
+	/*colfloat:right;*/
+}
+.event_info {
+	/*float:left;*/
+}
+#events_list {
+	background-color:#e7e7e7;
+	padding:10px;
+	border-radius:10px;
+	top:10%;
+	color:#000000;
+}
+#events_item div {
+	margin-top:5px;
+
 }

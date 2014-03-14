@@ -17,7 +17,13 @@
 
 <div class="navbar navbar-default" role="navigation">
   <p class= "navbar-text pull-left">
-    NAVIGATOR
+    <string>NAVIGATOR</strong> 
+    <% if user_signed_in? %>
+      |
+      <%= link_to 'Your Events', '/users/view_events' %>
+      |
+      <%= link_to 'New Event', '/users/add_event' %>
+    <% end %>
   </p>
   <p class="navbar-text pull-right">
     <% if user_signed_in? %>

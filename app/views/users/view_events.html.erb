@@ -1,20 +1,28 @@
-<h1>Your Events</h1><%= link_to 'Add New Event!', '/users/add_event' %>
+<h2>Your Events</h2>
 
+<h5><center>(Events are ordered by time.)</center></h5>
 <% @user_events.each_with_index do |e, index| %>
-	<div>
-		<div class="event_info">
-			<b> <%= index + 1 %>) <%= e.title.split.map(&:capitalize).join(' ') %></b><br>
-			Start Time: <%= (e.start_time-(e.start_time%100))/100 %>:<%if(e.start_time % 100)<10%>0<%end%><%= (e.start_time % 100) %><br>
-			End Time: <%= (e.end_time-(e.end_time%100))/100 %>:<%if(e.start_time % 100)<10%>0<%end%><%= (e.end_time % 100) %><br>
+	<div class = "row" id="events_list">
+		<div class="col-md-9" id="events_item">
+			<b>    <%= index + 1 %>) <%= e.title.split.map(&:capitalize).join(' ') %></b><br>
+			<%= (e.start_time-(e.start_time%100))/100 %>:<%if(e.start_time % 100)<10%>0<%end%><%= (e.start_time % 100) %>
+			<span class="glyphicon glyphicon-arrow-right"></span>
+			<%= (e.end_time-(e.end_time%100))/100 %>:<%if(e.end_time % 100)<10%>0<%end%><%= (e.end_time % 100) %><br>
 		</div>
-		<div class="event_actions">
+
+		<div class="col-md-3" id="events_item" padding-top="10px" margin-top="10px">
+			<div>
 			<%= form_tag("/users/delete_event", method: "post") do %>
 				<%= hidden_field_tag(:event_id, e.id) %>
-				<%= submit_tag("Delete Event") %>
+				<%= submit_tag("X", :class => "btn btn-sm btn-danger") %>
 			<% end %>
+			</div>
 		</div>
-		
-	</div>
-<% end %>
 
+	</div>
+	<br>
+<% end %>
+<% if @user_events.empty? %>
+	<%= link_to 'Add New Event', '/users/add_event', :class => "btn btn-lg btn-primary btn-block"%>
+<% end %>
 
