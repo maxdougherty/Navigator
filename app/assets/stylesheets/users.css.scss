@@ -28,6 +28,7 @@ textarea {
   display: inline-block;*/
   display: table;
   margin: auto;
+  
 }
 
 /*.center h1 {
@@ -40,4 +41,8 @@ textarea {
 	position: relative;
 	left: -50%;*/
 	text-align:left;
+}
+
+.center h1 {
+	text-align:center;
 }

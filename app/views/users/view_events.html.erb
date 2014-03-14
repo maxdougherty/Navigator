@@ -2,14 +2,18 @@
 
 <% @user_events.each_with_index do |e, index| %>
 	<div>
-		<p>Event #<%= index + 1 %><br>
-		Title: <%= e.title %><br>
-		Start Time: <%= (e.start_time-(e.start_time%100))/100 %>:<%if(e.start_time % 100)<10%>0<%end%><%= (e.start_time % 100) %><br>
-		End Time: <%= (e.end_time-(e.end_time%100))/100 %>:<%if(e.start_time % 100)<10%>0<%end%><%= (e.end_time % 100) %><br>
-		<%= form_tag("/users/delete_event", method: "post") do %>
-			<%= hidden_field_tag(:event_id, e.id) %>
-			<%= submit_tag("Delete Event") %>
-		<% end %></p>
+		<div class="event_info">
+			<b> <%= index + 1 %>) <%= e.title.split.map(&:capitalize).join(' ') %></b><br>
+			Start Time: <%= (e.start_time-(e.start_time%100))/100 %>:<%if(e.start_time % 100)<10%>0<%end%><%= (e.start_time % 100) %><br>
+			End Time: <%= (e.end_time-(e.end_time%100))/100 %>:<%if(e.start_time % 100)<10%>0<%end%><%= (e.end_time % 100) %><br>
+		</div>
+		<div class="event_actions">
+			<%= form_tag("/users/delete_event", method: "post") do %>
+				<%= hidden_field_tag(:event_id, e.id) %>
+				<%= submit_tag("Delete Event") %>
+			<% end %>
+		</div>
+		
 	</div>
 <% end %>
 
