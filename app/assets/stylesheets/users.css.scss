@@ -4,4 +4,40 @@
 
 @import "bootstrap";
 
+/* universal */
 
+html {
+  overflow-y: scroll;
+}
+
+body {
+  /*padding-top: 60px;*/
+  /*padding-left: 50px;*/
+}
+
+section {
+  overflow: auto;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.center {
+  /*text-align: center;
+  display: inline-block;*/
+  display: table;
+  margin: auto;
+}
+
+/*.center h1 {
+  margin-bottom: 10px;
+  text-align: center;
+}*/
+
+.add_event {
+	/*float:left;
+	position: relative;
+	left: -50%;*/
+	text-align:left;
+}

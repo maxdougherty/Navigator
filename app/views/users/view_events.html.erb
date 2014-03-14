@@ -1,7 +1,4 @@
-<h1>Your Events</h1>
-
-
-<%= link_to 'Add New Event!', '/users/add_event' %>
+<h1>Your Events</h1><%= link_to 'Add New Event!', '/users/add_event' %>
 
 <% @user_events.each_with_index do |e, index| %>
 	<div>

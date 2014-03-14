@@ -1,23 +1,28 @@
-<h1>Add A new Event!</h1>
-<h4>Events are ordered by start and end times.</h4>
 
-<% if not @errors.nil? %>
-	<h4> ERRORS: </h4>
-	<ul>
-	<% @errors.each do |err| %>
-		<li><%= err %>
+<div class="add_event">
+	<br>
+	<h1>Add New Event!</h1>
+	<h4>Events are ordered by start and end times.</h4>
+
+	<% if not @errors.nil? %>
+		<h4> ERRORS: </h4>
+		<ul>
+		<% @errors.each do |err| %>
+			<li><%= err %></li>
+		<% end %>
+		</ul>
 	<% end %>
-	</ul>
-<% end %>
 
-<%= form_tag("/", method: "post") do %>
-	<%= label_tag(:title, "Title:") %>
-	<%= text_field_tag(:title) %><br>
-	<%= label_tag(:start_time, "Start Time: ") %> 
-	<%= text_field_tag(:start_time) %>Time entered in 4-digit 24-hour format:<br>
-	<%= label_tag(:end_time, "End Time: ") %>
-	<%= text_field_tag(:end_time) %> 4:30PM => 1630 <br><br>
-	<%= submit_tag("Add Event", :onclick => "this.form.action = '/users/submit_new_event'") %>
-<% end %>
-<br>
-<%= link_to '<- Back', '/users/view_events' %>
+	<%= form_tag("/", method: "post") do %>
+		<%= label_tag(:title, "Title:") %>
+		<%= text_field_tag(:title) %><br>
+		Time entered in 4-digit 24-hour format: 4:30PM => 1630 <br>
+		<%= label_tag(:start_time, "Start Time: ") %> 
+		<%= text_field_tag(:start_time) %><br>
+		<%= label_tag(:end_time, "End Time: ") %>
+		<%= text_field_tag(:end_time) %><br><br>
+		<%= submit_tag("Add Event", :onclick => "this.form.action = '/users/submit_new_event'") %>
+	<% end %>
+	<br>
+	<%= link_to '<- Back', '/users/view_events' %>
+</div>
