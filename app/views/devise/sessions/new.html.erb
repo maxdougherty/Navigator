@@ -1,5 +1,6 @@
+<center>
 <h2>Sign in</h2>
-
+<div class="sign_in_page">
 <%= form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f| %>
   <div><% f.label :email %><br />
   <%= f.email_field :email, :autofocus => true, :placeholder => "Email Address"%></div>
@@ -8,10 +9,13 @@
   <%= f.password_field :password , :placeholder => "Password" %></div>
 
   <% if devise_mapping.rememberable? -%>
-    <div><%= f.check_box :remember_me %> <%= f.label :remember_me %></div>
+  	<!-- TODO: Commented out remember me button -->
+    <div><% f.check_box :remember_me %> <% f.label :remember_me %></div>
   <% end -%>
-
+  <br>
   <div ><%= f.submit "Sign in", :class => "btn btn-lg btn-primary btn-block" %></div>
 <% end %>
-<!-- THIS IS A REALLY LONG LINE OF TEXT HERE JUST TO SEE IF THIS MAKES IT WIDER -->
+
 <% render "devise/shared/links" %>
+</div>
+</center>

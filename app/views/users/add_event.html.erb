@@ -1,5 +1,6 @@
-
+<center>
 <div class="add_event">
+	
 	<h2>Add New Event</h2>
 	<br>
 
@@ -21,9 +22,12 @@
 			placeholder: 'Start Time (e.g. 1200)', :class => "input-field") %><br>
 		<% label_tag(:end_time, "End Time: ") %>
 		<%= text_field_tag(:end_time, nil, 
-			placeholder: 'End Time (e.g. 1430)', :class => "input-field") %><br><br>
+			placeholder: 'End Time (e.g. 1430)', :class => "input-field") %><br>
+		<%= text_field_tag(:address, nil,
+			placeholder: 'Address', :class => "input-field") %><br><br>
 		<%= submit_tag("Add Event", :onclick => "this.form.action = '/users/submit_new_event'", :class => "btn btn-lg btn-primary btn-block") %>
 	<% end %>
 	<br>
-
+	
 </div>
+</center>

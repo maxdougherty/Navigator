@@ -1,9 +1,15 @@
 class Event < ActiveRecord::Base
 
+	# attr_accessor :address, :longitude, :latitude
+
 	has_many :us_es_relations, dependent: :destroy
 	has_many :users, through: :us_es_relations
 	has_many :ss_es_relations, dependent: :destroy
 	has_many :schedules, through: :ss_es_relations
+
+	geocoded_by :address
+
+	after_validation :geocode #, :if => :address_changed?
 
 	# Models are magic. All code below is unused. -Max
 

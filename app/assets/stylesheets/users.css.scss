@@ -28,7 +28,7 @@ textarea {
   display: inline-block;*/
   display: table;
   margin: auto;
-  width:300px;
+  width:90%;
 
 }
 
@@ -41,7 +41,8 @@ textarea {
 	/*float:left;
 	position: relative;
 	left: -50%;*/
-	text-align:left;
+	text-align:center;
+	max-width:400px;
 }
 
 .center h2 {
@@ -68,12 +69,6 @@ textarea {
 	width:100%;
 }
 
-.event_actions {
-	/*colfloat:right;*/
-}
-.event_info {
-	/*float:left;*/
-}
 #events_list {
 	background-color:#e7e7e7;
 	padding:10px;
@@ -81,7 +76,29 @@ textarea {
 	top:10%;
 	color:#000000;
 }
-#events_item div {
-	margin-top:5px;
-
+#events_item {
+	float:left;
 }
+#events_delete {
+	margin-top:5px;
+	width:100%;
+	text-align:right;
+	/*float: right;*/
+}
+
+.view_events_list_text {
+	border-top:5px;
+}
+
+.sign_up_page {
+	max-width:400px;
+}
+
+.sign_in_page {
+	max-width:400px;
+}
+
+.view_events_page {
+	max-width:700px;
+}
+

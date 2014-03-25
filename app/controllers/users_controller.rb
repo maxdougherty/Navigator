@@ -34,7 +34,7 @@ class UsersController < ApplicationController
 		@errors = []
 
 		# Check to make sure no parameters are empty. If so, reject immediately
-		if params[:title].empty? || params[:start_time].empty? || params[:end_time].empty?
+		if params[:title].empty? || params[:start_time].empty? || params[:end_time].empty? || params[:address].empty?
 			@errors.push("Invalid Input: Non-filled fields")
 			render :add_event
 			return
@@ -43,7 +43,8 @@ class UsersController < ApplicationController
 		title = params[:title]
 		start_time = params[:start_time].to_i
 		end_time = params[:end_time].to_i
-
+		address = params[:address]
+		
 		# Validate inputs
 		if (title.length > MAX_TITLE_LENGTH)
 			@errors.push("Invalid Title: More than 128 characters")
@@ -65,7 +66,7 @@ class UsersController < ApplicationController
 		end
 
 		# Create new event through user to create association
-		current_user.events.create(title: title, start_time: start_time, end_time: end_time)
+		current_user.events.create(title: title, start_time: start_time, end_time: end_time, address: address)
 
 		# After successful event creation, render view of all user events
 		redirect_to :action => 'view_events'

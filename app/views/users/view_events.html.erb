@@ -1,28 +1,53 @@
 <h2>Your Events</h2>
 
 <h5><center>(Events are ordered by time.)</center></h5>
-<% @user_events.each_with_index do |e, index| %>
-	<div class = "row" id="events_list">
-		<div class="col-md-9" id="events_item">
-			<b>    <%= index + 1 %>) <%= e.title.split.map(&:capitalize).join(' ') %></b><br>
-			<%= (e.start_time-(e.start_time%100))/100 %>:<%if(e.start_time % 100)<10%>0<%end%><%= (e.start_time % 100) %>
-			<span class="glyphicon glyphicon-arrow-right"></span>
-			<%= (e.end_time-(e.end_time%100))/100 %>:<%if(e.end_time % 100)<10%>0<%end%><%= (e.end_time % 100) %><br>
-		</div>
+<center>
+<div class="view_events_page">
+	<table class="table table-striped">
+		<thead>
+			<th>#</th>
+			<th>Event</th>
+			<th>Time</th>
+			<th>Location</th>
+			<th>Actions</th>
+		</thead>
+		<tbody>
 
-		<div class="col-md-3" id="events_item" padding-top="10px" margin-top="10px">
-			<div>
-			<%= form_tag("/users/delete_event", method: "post") do %>
-				<%= hidden_field_tag(:event_id, e.id) %>
-				<%= submit_tag("X", :class => "btn btn-sm btn-danger") %>
-			<% end %>
-			</div>
-		</div>
+		<% @user_events.each_with_index do |e, index| %>
+			<tr>
+				<td class="view_events_list_text">
+					<%= index + 1 %>
+				</td>
+				<td class="view_events_list_text">
+					<b><%= e.title.split.map(&:capitalize).join(' ') %></b><br>
+				</td>
+				<td class="view_events_list_text">
+					<%= (e.start_time-(e.start_time%100))/100 %>:<%if(e.start_time % 100)<10%>0<%end%><%= (e.start_time % 100) %>
+					<span class="glyphicon glyphicon-arrow-right"></span>
+					<%= (e.end_time-(e.end_time%100))/100 %>:<%if(e.end_time % 100)<10%>0<%end%><%= (e.end_time % 100) %><br>
+				</td>
+				<td class = "view_event_list_text">
+					<%= e.address.split.map(&:capitalize).join(' ') %><br>
+				</td>
+				<td >
+					<%= form_tag("/users/delete_event", method: "post") do %>
+						<%= hidden_field_tag(:event_id, e.id) %>
+						<%= submit_tag("DELETE", :class => "btn btn-sm btn-danger") %>
+					<% end %>
+				</td>
+			</tr>
+		<% end %>
+		</tbody>
+	</table>
+	<% if @user_events.empty? %>
+		<%= link_to 'Add New Event', '/users/add_event', :class => "btn btn-lg btn-primary btn-block"%>
+	<% end %>
 
-	</div>
-	<br>
-<% end %>
-<% if @user_events.empty? %>
-	<%= link_to 'Add New Event', '/users/add_event', :class => "btn btn-lg btn-primary btn-block"%>
-<% end %>
+	<% marks = "" %>
+	<% @user_events.each_with_index do |e, index| %>
+		<% marks = marks + "&markers=label:#{index+1}%7C#{e.latitude},#{e.longitude}" %>
+	<% end %>
+	<%= image_tag "http://maps.google.com/maps/api/staticmap?size=450x300&sensor=false#{marks}" %>
+</div>
+</center>
 
