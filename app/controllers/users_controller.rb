@@ -13,21 +13,33 @@ class UsersController < ApplicationController
 
 	def view_events
 		@user_events = current_user.events.order(start_time: :asc, end_time: :asc)
-
-		# Uncomment to gives user at least one default event.
-
-		# if @user_events.blank?
-		# 	event_result = current_user.events.create(title: "Example Event!", start_time: 1200, end_time: 1400)
-		# 	@user_events = current_user.events
-		# end
-
 		render :view_events
+	end
 
+	def view_schedules
+		@user_schedules = current_user.schedules.order(start_time: :asc, end_time: :asc)
+		@errors = params[:errors]
+		render :view_schedules
+	end
+
+	def view_one_schedule
+		id = params[:schedule_id].to_i
+
+		@user_events = current_user.events.order(start_time: :asc, end_time: :asc)
+		@schedule = current_user.schedules.find(id)
+		@schedule_events = current_user.schedules.find(id).events.order(start_time: :asc, end_time: :asc)
+		@errors = params[:errors]
+		render :view_one_schedule
 	end
 
 	def add_event
-
 		render :add_event
+	end
+
+	def edit_event
+		id = params[:event_id].to_i
+		@event = current_user.events.find(id)
+		render :edit_event
 	end
 
 	def submit_new_event
@@ -66,12 +78,71 @@ class UsersController < ApplicationController
 		end
 
 		# Create new event through user to create association
-		current_user.events.create(title: title, start_time: start_time, end_time: end_time, address: address)
-
+		event = current_user.events.create(title: title, start_time: start_time, end_time: end_time, address: address)
+		if event.latitude.nil? || event.longitude.nil?
+			@errors.push("Invalid Location: Address could not be translated")
+			current_user.events.find(event.id).destroy
+			render :add_event
+			return
+		end
 		# After successful event creation, render view of all user events
 		redirect_to :action => 'view_events'
 		return
 
+	end
+
+	def submit_edited_event
+		@errors = []
+		id = params[:event_id].to_i
+		# Check to make sure no parameters are empty. If so, reject immediately
+		if params[:title].empty? || params[:start_time].empty? || params[:end_time].empty? || params[:address].empty?
+			@errors.push("Invalid Input: Non-filled fields")
+			@event = current_user.events.find(param[:event_id].to_i)
+			render :edit_event
+			return
+		end
+		# Convert parameters to appropriate types
+		title = params[:title]
+		start_time = params[:start_time].to_i
+		end_time = params[:end_time].to_i
+		address = params[:address]
+		
+		# Validate inputs
+		if (title.length > MAX_TITLE_LENGTH)
+			@errors.push("Invalid Title: More than 128 characters")
+		end
+		if (start_time < 0) || (end_time < 0)
+			@errors.push("Invalid Time: Seriously? Negative?")
+		end
+		if ((start_time % 100) % 60) != (start_time % 100) || (start_time % 2400) != start_time
+			@errors.push("Invalid Time: Start Time not correct format [hhmm]")
+		end
+		if ((end_time % 100) % 60) != (end_time % 100) || (end_time % 2400) != end_time
+			@errors.push("Invalid Time: End Time not correct format [hhmm]")
+		end
+
+		# If any errors occur, reject event creation and display errors
+		if not @errors.empty?
+			@event = current_user.events.find(params[:event_id].to_i)
+			render :edit_event
+			return
+		end
+
+		# Create new event through user to create association
+		old_event = current_user.events.find(id)
+		current_user.events.find(id).update(title: title, start_time: start_time, end_time: end_time, address: address)
+		new_event = current_user.events.find(id)
+
+		# Due to behavior of geocoder, have to check that update does not corrupt address
+		if (old_event.address != new_event.address) && (old_event.latitude == new_event.latitude) && (old_event.longitude == new_event.longitude)
+			@errors.push("Invalid Location: Address could not be translated")
+			@event = current_user.events.find(id)
+			render :edit_event
+			return
+		end
+		# After successful event creation, render view of all user events
+		redirect_to :action => 'view_events'
+		return
 	end
 
 	def delete_event
@@ -89,24 +160,98 @@ class UsersController < ApplicationController
 		return
 	end
 
-	def json_get_user_events
-		@user_events = current_user.events.order(start_time: :asc, end_time: :asc)
+	# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+	def submit_new_schedule
+		@errors = []
+		user_id = current_user.id
+
+		title = params[:title]
+		start_time = params[:start_time].to_i
+		end_time = params[:end_time].to_i
+		day = params[:day].to_i
+
+		if params[:title].empty? || params[:start_time].empty? || params[:end_time].empty? || params[:day].empty?
+			@errors.push("Invalid Input: Non-filled fields")
+			redirect_to :action => 'view_schedules', errors: @errors
+			return
+		end
+
+		if (title.length > MAX_TITLE_LENGTH)
+			@errors.push("Invalid Title: More than 128 characters")
+		end
+		if (start_time < 0) || (end_time < 0)
+			@errors.push("Invalid Time: Seriously? Negative?")
+		end
+		if ((start_time % 100) % 60) != (start_time % 100) || (start_time % 2400) != start_time
+			@errors.push("Invalid Time: Start Time not correct format [hhmm]")
+		end
+		if ((end_time % 100) % 60) != (end_time % 100) || (end_time % 2400) != end_time
+			@errors.push("Invalid Time: End Time not correct format [hhmm]")
+		end
+
+		if ((day % 8) != day)
+			@errors.push("Invalid Day: I'm impressed. How did you even do that?")
+		end
+
+		if not @errors.empty?
+			redirect_to :action => 'view_schedules', errors: @errors
+			return
+		end
+
+		schedule = current_user.schedules.create(title: title, start_time: start_time, end_time: end_time, day: day, num_events: 0)
+		redirect_to :action => 'view_schedules'
+		return
+
 	end
 
-	def json_add_user_event
-		@errors = []
+	def delete_schedule
+		user_id = current_user.id
+		schedule_id = params[:schedule_id].to_i
 
-		# Check to make sure no parameters are empty. If so, reject immediately
-		if params[:title].empty? || params[:start_time].empty? || params[:end_time].empty?
+		if not current_user.schedules.where(id: schedule_id).empty?
+			current_user.schedules.find(schedule_id).destroy
+		end
+		redirect_to :action => 'view_schedules'
+
+
+	end
+
+	def add_old_event_to_schedule
+		user_id = current_user.id
+		schedule_id = params[:schedule_id].to_i
+		event_id = params[:event_id].to_i
+		if current_user.events.where(id: event_id).blank?
+			# RETURN ERROR
+		end
+
+		if SsEsRelation.where(schedule_id: schedule_id, event_id: event_id).blank?
+			SsEsRelation.create(schedule_id: schedule_id, event_id: event_id)
+			schedule = Schedule.find(schedule_id)
+			Schedule.find(schedule_id).update(num_events: (schedule.num_events + 1))
+		end
+
+
+		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id]
+	end
+
+	def add_new_event_to_schedule
+		@errors = []
+		user_id = current_user.id
+		schedule_id = params[:schedule_id].to_i
+		
+		if params[:title].empty? || params[:start_time].empty? || params[:end_time].empty? || params[:address].empty?
 			@errors.push("Invalid Input: Non-filled fields")
-			render :add_event
+			redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors
 			return
 		end
 		# Convert parameters to appropriate types
 		title = params[:title]
 		start_time = params[:start_time].to_i
 		end_time = params[:end_time].to_i
+		address = params[:address]
 
+		
 		# Validate inputs
 		if (title.length > MAX_TITLE_LENGTH)
 			@errors.push("Invalid Title: More than 128 characters")
@@ -123,15 +268,43 @@ class UsersController < ApplicationController
 
 		# If any errors occur, reject event creation and display errors
 		if not @errors.empty?
-			render :add_event
+			redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors
 			return
 		end
 
 		# Create new event through user to create association
-		current_user.events.create(title: title, start_time: start_time, end_time: end_time)
+		event = Schedule.find(schedule_id).events.create(title: title, start_time: start_time, end_time: end_time, address: address)
+
+		if event.latitude.nil? || event.longitude.nil?
+			@errors.push("Invalid Location: Address could not be translated")
+			Schedule.find(schedule_id).events.find(event.id).destroy
+			redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors
+			return
+		end
+
+		if not params[:saving].nil?
+			UsEsRelation.create(user_id: current_user.id, event_id: event.id)
+		end
+
+		schedule = Schedule.find(schedule_id)
+		Schedule.find(schedule_id).update(num_events: (schedule.num_events + 1))
+
+		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors
+
 	end
 
-	def json_delete_user_event
+	def delete_event_from_schedule
+		user_id = current_user.id
+		schedule_id = params[:schedule_id].to_i
+		event_id = params[:event_id].to_i
 
+		SsEsRelation.where(schedule_id: schedule_id, event_id: event_id).destroy_all
+
+		schedule = Schedule.find(schedule_id)
+		Schedule.find(schedule_id).update(num_events: (schedule.num_events - 1))
+
+		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id]
 	end
+
+
 end

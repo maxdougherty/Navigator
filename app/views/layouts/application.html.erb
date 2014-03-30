@@ -20,14 +20,14 @@
     <string>NAVIGATOR</strong> 
     <% if user_signed_in? %>
       |
-      <%= link_to 'Your Events', '/users/view_events' %>
+      <%= link_to 'Schedules', '/users/view_schedules' %>
       |
-      <%= link_to 'New Event', '/users/add_event' %>
+      <%= link_to 'Events', '/users/view_events' %>
     <% end %>
   </p>
   <p class="navbar-text pull-right">
     <% if user_signed_in? %>
-      <strong><%= current_user.email %></strong>.
+      <strong><%= current_user.email %></strong> |
       <%= link_to 'Edit profile', edit_user_registration_path, :class => 'navbar-link' %> |
       <%= link_to "Logout", destroy_user_session_path, method: :delete, :class => 'navbar-link'  %>
     <% else %>

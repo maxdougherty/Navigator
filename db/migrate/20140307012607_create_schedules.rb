@@ -2,7 +2,7 @@ class CreateSchedules < ActiveRecord::Migration
   def change
     create_table :schedules do |t|
       t.string :title
-      t.integer :num_events
+      t.integer :num_events #TODO: Should probably get rid of this
       t.boolean :has_events
       t.integer :day
       t.integer :start_time
