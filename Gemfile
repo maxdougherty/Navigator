@@ -44,6 +44,7 @@ end
 group :test do
 	gem 'factory_girl_rails'
 	gem 'rspec-rails'
+	gem 'rspec-html-matchers'
 	gem 'simplecov', '~> 0.7.1', :require => false
 end
 
