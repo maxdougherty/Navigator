@@ -6,7 +6,7 @@ p browser.current_url
 p browser.title
 
 ##sign up##
-browser.find_element(name: "user[email]").send_keys "user355@schedule.com"
+browser.find_element(name: "user[email]").send_keys "user9955@schedule.com"
 browser.find_element(name: "user[password]").send_keys "password"
 browser.find_element(name: "user[password_confirmation]").send_keys "password"
 browser.find_element(name: "commit").click
@@ -21,7 +21,7 @@ browser.find_element(name: "commit").click
 p browser.current_url
 p browser.title
 
-=begin
+
 ##create an event##
 browser.find_element(name: "view").click
 browser.find_element(name: "title").send_keys "event1"
@@ -31,6 +31,6 @@ browser.find_element(name: "address").send_keys "2020 Kittredge Ave. Berkeley, C
 browser.find_element(name: "commit").click
 p browser.current_url
 p browser.title
-=end
+
 
 browser.close
