@@ -1,28 +1,25 @@
-== README
+Ruby version: 2.0.0
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+In order to run the tests, please clone the github repository and run
 
-Things you may want to cover:
+bundle install
 
-* Ruby version
+Make sure that database.yml is in the config folder.
 
-* System dependencies
+Then run:
 
-* Configuration
+bin/rake db:migrate RAILS_ENV=test
 
-* Database creation
+rspec spec
 
-* Database initialization
+The tests should run.
 
-* How to run the test suite
+To run the automatic GUI tests, type
 
-* Services (job queues, cache servers, search engines, etc.)
+ruby GUITests.rb
 
-* Deployment instructions
+which is located in the spec folder.
 
-* ...
+To start the application, type
 
-
-Please feel free to use a different markup language if you do not plan to run
-<tt>rake doc:app</tt>.
+rails s
