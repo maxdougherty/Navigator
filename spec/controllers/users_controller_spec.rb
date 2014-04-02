@@ -228,6 +228,46 @@ describe UsersController do
 	end
     end
 
+    describe "when users add old event to schedule" do
+        it "should successfully add an event to schedule" do
+            post :add_old_event_to_schedule, schedule_id:1, event_id:1
+            response.should be_redirect
+            assigns(:errors).should be_empty
+        end
+    end
+
+    describe "when users delete schedule" do
+        it "should successfully delete a schedule and render old schedules" do
+            post :delete_schedule, scheulde_id:1
+            response.should be_redirect
+            assigns(:errors).should be_empty
+        end
+    end
+
+    describe "when users delete an event" do
+        it "should display events page without the event deleted" do
+            post :delete_event, event_id:1
+            response.should be_redirect
+            assigns(:errors).should be_empty
+        end
+    end
+
+    describe "when users delete an event from a specific schedule" do
+        it "should display events page for the particular schedule without the event" do
+            post :delete_event_from_schedule, schedule_id:1, event_id:1
+            response.should be_redirect
+            assigns(:errors).should be_empty
+        end
+    end
+
+    describe "display one schedule" do
+        it "should display just one schedule for the users" do
+            post :view_one_schedule, schedule_id:1
+            response.should render_template("view_one_schedule")
+        end
+    end
+    
+
 
     
 
