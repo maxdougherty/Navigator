@@ -1,12 +1,12 @@
 require "selenium-webdriver"
 browser = Selenium::WebDriver.for :chrome
-browser.get "http://tranquil-falls-5399.herokuapp.com/"
+browser.get "http://dry-fortress-4431.herokuapp.com/"
 browser.find_element(link_text: "Sign up").click
 p browser.current_url
 p browser.title
 
 ##sign up##
-browser.find_element(name: "user[email]").send_keys "user9955@schedule.com"
+browser.find_element(name: "user[email]").send_keys "user1000@schedule.com"
 browser.find_element(name: "user[password]").send_keys "password"
 browser.find_element(name: "user[password_confirmation]").send_keys "password"
 browser.find_element(name: "commit").click

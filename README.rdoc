@@ -23,3 +23,5 @@ which is located in the spec folder.
 To start the application, type
 
 rails s
+
+The application is deployed on http://dry-fortress-4431.herokuapp.com/
