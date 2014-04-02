@@ -24,7 +24,8 @@ describe UsersController do
 
     describe "when users are routed to index" do
 	    it "should populate the users instance variable to the view" do
-		assigns(@users).should_not be_nil
+		get :index
+		assigns(:users).should_not be_nil
 	    end
     end
 
