@@ -1,7 +1,237 @@
 require 'spec_helper'
 
 describe UsersController do
+
+    login_user
+
+    before(:each) do
+	post :submit_new_schedule, title: "schedule1", start_time:1200, end_time:1430,day:4
+	post :add_new_event_to_schedule, title: "event1", start_time:1200, end_time:1430, address:"Safeway, Berkeley", schedule_id:1, saving: true
+	post :add_new_event_to_schedule, title: "event2", start_time:1400, end_time:1430, address:"Soda Hall, Berkeley", schedule_id:1, saving: true
+    end
+
+    #current user is not nil
+    it "should have a current_user" do
+	subject.current_user.should_not be_nil
+    end
+
+    describe "when users are routed to view events" do
+	    it "should returns all events of the user" do
+		post :view_events
+		response.should render_template("view_events")
+	    end
+    end
+
+    describe "when users are routed to index" do
+	    it "should populate the users instance variable to the view" do
+		assigns(@users).should_not be_nil
+	    end
+    end
+
+    describe "when users are routed to view schedules" do
+	    it "should returns all schedules of the user" do
+		post :view_schedules
+		response.should render_template("view_schedules")
+	    end
+    end
+
+    describe "when users tries to edit event with an incorrect event id" do
+	    it "should returns not throw any error" do
+		post :edit_event, event_id: 1234 #using random event_id
+		response.should render_template("edit_event") #assumes it still renders the same page as if the id is correct as of the latest version of our code in iteration 2
+		assigns(:events).should be_nil #however, events should not be assigned anything because this event does not exist
+	    end
+    end
+
+    describe "when users tries to create events with invalid params" do
+    	it "should go back to the edit event page" do
+		post :submit_new_event, title: "event3", start_time:{}, end_time:1430, address:"Safeway, Berkeley", schedule_id:1, saving: false
+		response.should render_template("add_event")
+		assigns(:errors).should_not be_nil
+
+		post :submit_new_event, title: "event3", start_time:1200, end_time:{}, address:"Safeway, Berkeley", schedule_id:1, saving: false
+		response.should render_template("add_event")
+		assigns(:errors).should_not be_nil
+
+		post :submit_new_event, title: "event3", start_time:1200, end_time:1430, address:{}, schedule_id:1, saving: false
+		response.should render_template("add_event")
+		assigns(:errors).should_not be_nil
+
+		post :submit_new_event, title: {}, start_time:1200, end_time:1430, address:"Safeway, Berkeley", schedule_id:1, saving: false
+		response.should render_template("add_event")
+		assigns(:errors).should_not be_nil
+
+		post :submit_new_event, title: "11111111111111111111111111111111111111111111111111111111111111
+							2888888888888888888888888888888888888888888888888888888888888888888888
+							88888888888888888888888888888888888888888888888888
+							1111111111111111111111111111112222222222222222888888888888
+							super long title", start_time:1200, end_time:1430, address:"Safeway, Berkeley", schedule_id:1, saving: false
+		response.should render_template("add_event")
+		assigns(:errors).should_not be_nil
+
+		post :submit_new_event, title: "event3", start_time:4830, end_time:1430, address:"Safeway, Berkeley", schedule_id:1, saving: false
+		response.should render_template("add_event")
+		assigns(:errors).should_not be_nil
+
+		post :submit_new_event, title: "event3", start_time:1200, end_time:4830, address:"Safeway, Berkeley", schedule_id:1, saving: false
+		response.should render_template("add_event")
+		assigns(:errors).should_not be_nil
+
+		post :submit_new_event, title: "event3", start_time:1200, end_time:1430, address:".%$%", schedule_id:1, saving: false
+		response.should render_template("add_event")
+		assigns(:errors).should_not be_nil
+	end
+    end
+
+    describe "when users tries to submit edited events with invalid params" do
+    	it "should go back to the edit event page" do
+		post :submit_edited_event, title: "event3", start_time:{}, end_time:1430, address:"Safeway, Berkeley", event_id:1
+		response.should render_template("edit_event")
+		assigns(:errors).should_not be_nil
+
+		post :submit_edited_event, title: "event3", start_time:1200, end_time:{}, address:"Safeway, Berkeley", event_id:1
+		response.should render_template("edit_event")
+		assigns(:errors).should_not be_nil
+
+		post :submit_edited_event, title: "event3", start_time:1200, end_time:1430, address:{}, event_id:1
+		response.should render_template("edit_event")
+		assigns(:errors).should_not be_nil
+
+		post :submit_edited_event, title: {}, start_time:1200, end_time:1430, address:"Safeway, Berkeley", event_id:1
+		response.should render_template("edit_event")
+		assigns(:errors).should_not be_nil
+
+		post :submit_edited_event, title: "11111111111111111111111111111111111111111111111111111111111111
+							2888888888888888888888888888888888888888888888888888888888888888888888
+							88888888888888888888888888888888888888888888888888
+							1111111111111111111111111111112222222222222222888888888888
+							super long title", start_time:1200, end_time:1430, address:"Safeway, Berkeley", event_id:1
+		response.should render_template("edit_event")
+		assigns(:errors).should_not be_nil
+
+		post :submit_edited_event, title: "event3", start_time:4830, end_time:1430, address:"Safeway, Berkeley", event_id:1
+		response.should render_template("edit_event")
+		assigns(:errors).should_not be_nil
+
+		post :submit_edited_event, title: "event3", start_time:1200, end_time:4830, address:"Safeway, Berkeley", event_id:1
+		response.should render_template("edit_event")
+		assigns(:errors).should_not be_nil
+
+		post :submit_edited_event, title: "event3", start_time:1200, end_time:1430, address:".%$%", event_id:1
+		response.should render_template("edit_event")
+		assigns(:errors).should_not be_nil
+	end
+    end
+
+    describe "when users tries to add events to schedule with invalid params" do
+    	it "should go back to the edit event page" do
+		post :add_new_event_to_schedule, title: "event3", start_time:{}, end_time:1430, address:"Safeway, Berkeley", schedule_id:1, saving: false
+		response.should be_redirect
+		response.should redirect_to(action: 'view_one_schedule', :'errors[]'=> "Invalid Input: Non-filled fields", schedule_id: 1)
+		assigns(:errors).should_not be_nil
+
+		post :add_new_event_to_schedule, title: "event3", start_time:1200, end_time:{}, address:"Safeway, Berkeley", schedule_id:1, saving: false
+		response.should be_redirect
+		response.should redirect_to(action: 'view_one_schedule', :'errors[]'=> "Invalid Input: Non-filled fields", schedule_id: 1)
+		assigns(:errors).should_not be_nil
+
+		post :add_new_event_to_schedule, title: "event3", start_time:1200, end_time:1430, address:{}, schedule_id:1, saving: false
+		response.should be_redirect
+		response.should redirect_to(action: 'view_one_schedule', :'errors[]'=> "Invalid Input: Non-filled fields", schedule_id: 1)
+		assigns(:errors).should_not be_nil
+
+		post :add_new_event_to_schedule, title: {}, start_time:1200, end_time:1430, address:"Safeway, Berkeley", schedule_id:1, saving: false
+		response.should be_redirect
+		response.should redirect_to(action: 'view_one_schedule', :'errors[]'=> "Invalid Input: Non-filled fields", schedule_id: 1)
+		assigns(:errors).should_not be_nil
+
+		post :add_new_event_to_schedule, title: "11111111111111111111111111111111111111111111111111111111111111
+							2888888888888888888888888888888888888888888888888888888888888888888888
+							88888888888888888888888888888888888888888888888888
+							1111111111111111111111111111112222222222222222888888888888
+							super long title", start_time:1200, end_time:1430, address:"Safeway, Berkeley", schedule_id:1, saving: false
+		response.should be_redirect
+		response.should redirect_to(action: 'view_one_schedule', :'errors[]'=> "Invalid Title: More than 128 characters", schedule_id: 1)
+		assigns(:errors).should_not be_nil
+
+		post :add_new_event_to_schedule, title: "event3", start_time:4830, end_time:1430, address:"Safeway, Berkeley", schedule_id:1, saving: false
+		response.should be_redirect
+		response.should redirect_to(action: 'view_one_schedule', :'errors[]'=> "Invalid Time: Start Time not correct format [hhmm]", schedule_id: 1)
+		assigns(:errors).should_not be_nil
+
+		post :add_new_event_to_schedule, title: "event3", start_time:1200, end_time:4830, address:"Safeway, Berkeley", schedule_id:1, saving: false
+		response.should be_redirect
+		response.should redirect_to(action: 'view_one_schedule', :'errors[]'=> "Invalid Time: End Time not correct format [hhmm]", schedule_id: 1)
+		assigns(:errors).should_not be_nil
+
+		post :add_new_event_to_schedule, title: "event3", start_time:1200, end_time:1430, address:".%$%", schedule_id:1, saving: false
+		response.should be_redirect
+		response.should redirect_to(action: 'view_one_schedule', :'errors[]'=> "Invalid Location: Address could not be translated", schedule_id: 1)
+		assigns(:errors).should_not be_nil
+	end
+    end
+
+    describe "when users tries to create schedules with invalid params" do
+    	it "should go back to the edit event page" do
+		post :submit_new_schedule, title: "schedule2", start_time:{}, end_time:1430, day: 1
+		response.should be_redirect
+		response.should redirect_to(action: 'view_schedules', :'errors[]'=> "Invalid Input: Non-filled fields")
+		assigns(:errors).should_not be_nil
+
+		post :submit_new_schedule, title: "schedule2", start_time:1200, end_time:{}, day: 1
+		response.should be_redirect
+		response.should redirect_to(action: 'view_schedules', :'errors[]'=> "Invalid Input: Non-filled fields")
+		assigns(:errors).should_not be_nil
+
+		post :submit_new_schedule, title: "schedule2", start_time:1200, end_time:1430, day: {}
+		response.should be_redirect
+		response.should redirect_to(action: 'view_schedules', :'errors[]'=> "Invalid Input: Non-filled fields")
+		assigns(:errors).should_not be_nil
+
+		post :submit_new_schedule, title: {}, start_time:1200, end_time:1430, day: 1
+		response.should be_redirect
+		response.should redirect_to(action: 'view_schedules', :'errors[]'=> "Invalid Input: Non-filled fields")
+		assigns(:errors).should_not be_nil
+
+		post :submit_new_schedule, title: "11111111111111111111111111111111111111111111111111111111111111
+							2888888888888888888888888888888888888888888888888888888888888888888888
+							88888888888888888888888888888888888888888888888888
+							1111111111111111111111111111112222222222222222888888888888
+							super long title", start_time:1200, end_time:1430, day: 1
+		response.should be_redirect
+		response.should redirect_to(action: 'view_schedules', :'errors[]'=> "Invalid Title: More than 128 characters")
+		assigns(:errors).should_not be_nil
+
+		post :submit_new_schedule, title: "schedule2", start_time:4830, end_time:1430, day: 1
+		response.should be_redirect
+		response.should redirect_to(action: 'view_schedules', :'errors[]'=> "Invalid Time: Start Time not correct format [hhmm]")
+		assigns(:errors).should_not be_nil
+
+		post :submit_new_schedule, title: "schedule2", start_time:1200, end_time:4830, day: 1
+		response.should be_redirect
+		response.should redirect_to(action: 'view_schedules', :'errors[]'=> "Invalid Time: End Time not correct format [hhmm]")
+		assigns(:errors).should_not be_nil
+
+		post :submit_new_schedule, title: "schedule2", start_time:1200, end_time:1430, day: 9
+		response.should be_redirect
+		response.should redirect_to(action: 'view_schedules', :'errors[]'=> "Invalid Day: I'm impressed. How did you even do that?")
+		assigns(:errors).should_not be_nil
+	end
+    end
+
+    describe "when users successfully added an event" do
+	it "should assign events and redirect us to the corresponding schedule" do
+		post :add_new_event_to_schedule, title: "event3", start_time:1200, end_time:1430, address:"Safeway, Berkeley", schedule_id:1, saving: false
+		response.should be_redirect
+		assigns(:errors).should be_empty
+	end
+    end
+
+
     
+
+=begin
+    #These tests the JSON functionality of our backend, only for mobile user mode.
     ########Test the add functions#######
     login_user
     #current user is not nil

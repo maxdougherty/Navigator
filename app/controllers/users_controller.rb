@@ -38,7 +38,11 @@ class UsersController < ApplicationController
 
 	def edit_event
 		id = params[:event_id].to_i
-		@event = current_user.events.find(id)
+		begin
+		  @event = current_user.events.find(id)
+		rescue ActiveRecord::RecordNotFound => e
+		  @event = nil #TODO: Redirects to another page
+		end
 		render :edit_event
 	end
 
@@ -60,9 +64,6 @@ class UsersController < ApplicationController
 		# Validate inputs
 		if (title.length > MAX_TITLE_LENGTH)
 			@errors.push("Invalid Title: More than 128 characters")
-		end
-		if (start_time < 0) || (end_time < 0)
-			@errors.push("Invalid Time: Seriously? Negative?")
 		end
 		if ((start_time % 100) % 60) != (start_time % 100) || (start_time % 2400) != start_time
 			@errors.push("Invalid Time: Start Time not correct format [hhmm]")
@@ -97,7 +98,7 @@ class UsersController < ApplicationController
 		# Check to make sure no parameters are empty. If so, reject immediately
 		if params[:title].empty? || params[:start_time].empty? || params[:end_time].empty? || params[:address].empty?
 			@errors.push("Invalid Input: Non-filled fields")
-			@event = current_user.events.find(param[:event_id].to_i)
+			@event = current_user.events.find(params[:event_id].to_i)
 			render :edit_event
 			return
 		end
@@ -110,9 +111,6 @@ class UsersController < ApplicationController
 		# Validate inputs
 		if (title.length > MAX_TITLE_LENGTH)
 			@errors.push("Invalid Title: More than 128 characters")
-		end
-		if (start_time < 0) || (end_time < 0)
-			@errors.push("Invalid Time: Seriously? Negative?")
 		end
 		if ((start_time % 100) % 60) != (start_time % 100) || (start_time % 2400) != start_time
 			@errors.push("Invalid Time: Start Time not correct format [hhmm]")
@@ -165,23 +163,20 @@ class UsersController < ApplicationController
 	def submit_new_schedule
 		@errors = []
 		user_id = current_user.id
-
-		title = params[:title]
-		start_time = params[:start_time].to_i
-		end_time = params[:end_time].to_i
-		day = params[:day].to_i
-
+		
 		if params[:title].empty? || params[:start_time].empty? || params[:end_time].empty? || params[:day].empty?
 			@errors.push("Invalid Input: Non-filled fields")
 			redirect_to :action => 'view_schedules', errors: @errors
 			return
 		end
 
+		title = params[:title]
+		start_time = params[:start_time].to_i
+		end_time = params[:end_time].to_i
+		day = params[:day].to_i
+
 		if (title.length > MAX_TITLE_LENGTH)
 			@errors.push("Invalid Title: More than 128 characters")
-		end
-		if (start_time < 0) || (end_time < 0)
-			@errors.push("Invalid Time: Seriously? Negative?")
 		end
 		if ((start_time % 100) % 60) != (start_time % 100) || (start_time % 2400) != start_time
 			@errors.push("Invalid Time: Start Time not correct format [hhmm]")
@@ -255,9 +250,6 @@ class UsersController < ApplicationController
 		# Validate inputs
 		if (title.length > MAX_TITLE_LENGTH)
 			@errors.push("Invalid Title: More than 128 characters")
-		end
-		if (start_time < 0) || (end_time < 0)
-			@errors.push("Invalid Time: Seriously? Negative?")
 		end
 		if ((start_time % 100) % 60) != (start_time % 100) || (start_time % 2400) != start_time
 			@errors.push("Invalid Time: Start Time not correct format [hhmm]")
