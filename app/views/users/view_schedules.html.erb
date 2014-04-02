@@ -48,7 +48,7 @@
 								<div class="btn-group">
 									<%= form_tag("/users/view_one_schedule", method: "post") do %>
 										<%= hidden_field_tag(:schedule_id, e.id) %>
-										<%= submit_tag("View", :name => "view", :class => "btn btn-sm btn-primary", :onclick => "this.form.method = 'get'") %>
+										<%= submit_tag("View", :class => "btn btn-sm btn-primary", :onclick => "this.form.method = 'get'") %>
 										<%= submit_tag("DELETE", :class => "btn btn-sm btn-danger", :onclick => "this.form.action = '/users/delete_schedule'") %>
 									<% end %>
 								</div>
