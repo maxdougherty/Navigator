@@ -228,11 +228,10 @@ describe UsersController do
 	end
     end
 
-    describe "when users add old event to schedule" do
+        describe "when users add old event to schedule" do
         it "should successfully add an event to schedule" do
             post :add_old_event_to_schedule, schedule_id:1, event_id:1
             response.should be_redirect
-            assigns(:errors).should be_empty
         end
     end
 
@@ -240,7 +239,6 @@ describe UsersController do
         it "should successfully delete a schedule and render old schedules" do
             post :delete_schedule, scheulde_id:1
             response.should be_redirect
-            assigns(:errors).should be_empty
         end
     end
 
@@ -248,7 +246,6 @@ describe UsersController do
         it "should display events page without the event deleted" do
             post :delete_event, event_id:1
             response.should be_redirect
-            assigns(:errors).should be_empty
         end
     end
 
@@ -256,7 +253,6 @@ describe UsersController do
         it "should display events page for the particular schedule without the event" do
             post :delete_event_from_schedule, schedule_id:1, event_id:1
             response.should be_redirect
-            assigns(:errors).should be_empty
         end
     end
 
