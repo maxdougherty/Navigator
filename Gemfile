@@ -36,6 +36,7 @@ gem 'turbolinks'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 1.2'
 
+
 group :production do
 	gem 'pg', '0.15.1'
 	gem 'rails_12factor', '0.0.2'
@@ -46,6 +47,7 @@ group :test do
 	gem 'rspec-rails'
 	gem 'rspec-html-matchers'
 	gem 'simplecov', '~> 0.7.1', :require => false
+	gem 'selenium-webdriver', '~> 2.35.1'
 end
 
 group :doc do
