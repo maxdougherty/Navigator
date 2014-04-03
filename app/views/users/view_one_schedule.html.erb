@@ -68,13 +68,13 @@
 
 			<%= form_tag("/", method: "post") do %>
 				<% label_tag(:title, "Title:") %>
-				<%= text_field_tag(:title, nil, 
+				<%= text_field_tag(:title, nil,
 					placeholder: 'Event Name', :class => "input-field") %><br>
-				<% label_tag(:start_time, "Start Time: ") %> 
-				<%= text_field_tag(:start_time, nil, 
+				<% label_tag(:start_time, "Start Time: ") %>
+				<%= text_field_tag(:start_time, nil,
 					placeholder: 'Start Time (e.g. 1200)', :class => "input-field") %><br>
 				<% label_tag(:end_time, "End Time: ") %>
-				<%= text_field_tag(:end_time, nil, 
+				<%= text_field_tag(:end_time, nil,
 					placeholder: 'End Time (e.g. 1430)', :class => "input-field") %><br>
 				<%= text_field_tag(:address, nil,
 					placeholder: 'Address', :class => "input-field") %><br>
@@ -84,7 +84,7 @@
 				<%= submit_tag("Add Event", :onclick => "this.form.action = '/users/add_new_event_to_schedule'", :class => "btn btn-lg btn-primary btn-block") %>
 			<% end %>
 			<br>
-			<h4><u>Add Saved Event</u></h4>	
+			<h4><u>Add Saved Event</u></h4>
 			<table class="table table-striped">
 			<thead>
 				<th>#</th>
