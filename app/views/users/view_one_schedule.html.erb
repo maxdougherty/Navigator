@@ -38,9 +38,6 @@
 							<%= (e.end_time-(e.end_time%100))/100 %>:<%if(e.end_time % 100)<10%>0<%end%><%= (e.end_time % 100) %><br>
 						</td>
 
-						<td class="view_event_list_text">
-							<% if((e.duration-(e.duration%100))/100) > 0%><%= (e.duration-(e.duration%100))/100 %> hrs,<%end%> <%= e.duration%60 %> mins<br>
-						</td>
 
 						<td class="view_event_list_text">
 							<%= e.address.split.map(&:capitalize).join(' ') %>
@@ -60,13 +57,60 @@
 				</tbody>
 				<% end %>
 			</table>
-			<% if not @schedule_events.empty? %>
-				<% marks = "" %>
-				<% @schedule_events.each_with_index do |e, index| %>
-					<% marks = marks + "&markers=label:#{index+1}%7C#{e.latitude},#{e.longitude}" %>
-				<% end %>
-				<%= image_tag "http://maps.google.com/maps/api/staticmap?size=450x300&sensor=false#{marks}" %>
-			<% end %>
+
+
+
+
+  <head>
+    <style>
+      #map_canvas {
+        width: 550px;
+        height: 400px;
+      }
+    </style>
+
+
+    <script src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    <script>
+      function initialize() {
+		  var myLatlng = new google.maps.LatLng(37.8,-122);
+		  var mapOptions = {
+		    zoom: 4,
+		    center: myLatlng
+		  }
+
+		  var map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+
+		<% @schedule_events.each_with_index do |e, index| %>
+			var newLat = new google.maps.LatLng(<%=e.latitude%>, <%=e.longitude%>);
+		    var marker = new google.maps.Marker({
+		      position: newLat,
+		      map: map,
+		  });
+		  <% end %>
+
+
+
+
+
+
+	  }
+	  google.maps.event.addDomListener(window, 'load', initialize);
+
+
+    </script>
+
+
+
+  </head>
+  <body>
+    <div id="map_canvas"></div>
+  </body>
+
+
+
+
+
 		</div>
 		<!-- SIDEBAR VIEW -->
 		<div class="col-sm-5 col-sm-offset-1 blog-sidebar">
