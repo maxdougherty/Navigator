@@ -4,9 +4,6 @@ class CreateEvents < ActiveRecord::Migration
       t.string :title
       t.integer :start_time
       t.integer :end_time
-      t.string :address
-      t.float :longitude
-      t.float :latitude
 
       t.timestamps
     end

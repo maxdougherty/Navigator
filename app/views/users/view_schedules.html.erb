@@ -5,7 +5,7 @@
 		<h2>Your Schedules</h2>
 	</div>
 	<div class="row">
-		<div class="col-sm-6 blog-main">
+		<div class="col-sm-7 blog-main">
 			<table class="table table-hover">
 				<thead>
 					<th>#</th>
@@ -17,7 +17,7 @@
 				<tbody>
 					<% (0..7).each do |n| %>
 					<% if not @user_schedules.where(day: n).empty? %>
-						
+
 						<tr>
 						<td>
 							<%= days[n] %>
@@ -27,7 +27,7 @@
 						<td></td>
 						<td></td>
 						</tr>
-						
+
 						<% @user_schedules.where(day: n).each_with_index do |e, index| %>
 						<tr>
 							<td class="view_events_list_text">
@@ -55,15 +55,15 @@
 							</td>
 						</tr>
 						<% end %>
-						
-					
+
+
 					<% end %>
 					<% end %>
 				</tbody>
 			</table>
 		</div>
 
-		<div class="col-sm-5 col-sm-offset-1 blog-sidebar">
+		<div class="col-sm-4 col-sm-offset-1 blog-sidebar">
 			<h4><u>Add New Schedule</u></h4>
 			<% if not @errors.nil? %>
 				<h4> ERRORS: </h4>
@@ -74,34 +74,19 @@
 				</ul>
 			<% end %>
 			<%= form_tag("/users/submit_new_schedule", method: "post") do %>
-				<%= text_field_tag(:title, nil, 
+				<%= text_field_tag(:title, nil,
 					placeholder: "Schedule Name", :class => "input-field") %>
 				<%= select_tag(:day, options_for_select(
 					[["(Select Day) or Leave Unspecified", 0], ["Monday", 1], ["Tuesday", 2], ["Wednesday", 3], ["Thursday", 4],
 					["Friday", 5], ["Saturday", 6], ["Sunday", 7]]), :class => "form-control", :style => "height:25px") %>
-				<%= text_field_tag(:start_time, nil, 
+				<% text_field_tag(:start_time, nil,
 					placeholder: "Start Time  (e.g. 1200)", :class => "input-field") %>
-				<%= text_field_tag(:end_time, nil, 
+				<% text_field_tag(:end_time, nil,
 					placeholder: "End Time (e.g. 1430)", :class => "input-field") %><br><br>
 				<%= submit_tag("Add Schedule", :class => "btn btn-lg btn-primary btn-block") %>
-				
+
 			<% end %>
 		</div>
 	</div>
 </div>
 </center>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

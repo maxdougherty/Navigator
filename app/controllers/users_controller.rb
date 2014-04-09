@@ -60,7 +60,7 @@ class UsersController < ApplicationController
 		start_time = params[:start_time].to_i
 		end_time = params[:end_time].to_i
 		address = params[:address]
-		
+
 		# Validate inputs
 		if (title.length > MAX_TITLE_LENGTH)
 			@errors.push("Invalid Title: More than 128 characters")
@@ -107,7 +107,7 @@ class UsersController < ApplicationController
 		start_time = params[:start_time].to_i
 		end_time = params[:end_time].to_i
 		address = params[:address]
-		
+
 		# Validate inputs
 		if (title.length > MAX_TITLE_LENGTH)
 			@errors.push("Invalid Title: More than 128 characters")
@@ -163,8 +163,8 @@ class UsersController < ApplicationController
 	def submit_new_schedule
 		@errors = []
 		user_id = current_user.id
-		
-		if params[:title].empty? || params[:start_time].empty? || params[:end_time].empty? || params[:day].empty?
+
+		if params[:title].empty? || params[:day].empty?
 			@errors.push("Invalid Input: Non-filled fields")
 			redirect_to :action => 'view_schedules', errors: @errors
 			return
@@ -178,12 +178,6 @@ class UsersController < ApplicationController
 		if (title.length > MAX_TITLE_LENGTH)
 			@errors.push("Invalid Title: More than 128 characters")
 		end
-		if ((start_time % 100) % 60) != (start_time % 100) || (start_time % 2400) != start_time
-			@errors.push("Invalid Time: Start Time not correct format [hhmm]")
-		end
-		if ((end_time % 100) % 60) != (end_time % 100) || (end_time % 2400) != end_time
-			@errors.push("Invalid Time: End Time not correct format [hhmm]")
-		end
 
 		if ((day % 8) != day)
 			@errors.push("Invalid Day: I'm impressed. How did you even do that?")
@@ -194,7 +188,8 @@ class UsersController < ApplicationController
 			return
 		end
 
-		schedule = current_user.schedules.create(title: title, start_time: start_time, end_time: end_time, day: day, num_events: 0)
+		schedule = current_user.schedules.create(title: title, start_time: 0, end_time: 2359, day: day, num_events: 0)
+		
 		redirect_to :action => 'view_schedules'
 		return
 
@@ -223,7 +218,10 @@ class UsersController < ApplicationController
 		if SsEsRelation.where(schedule_id: schedule_id, event_id: event_id).blank?
 			SsEsRelation.create(schedule_id: schedule_id, event_id: event_id)
 			schedule = Schedule.find(schedule_id)
-			Schedule.find(schedule_id).update(num_events: (schedule.num_events + 1))
+			schedule_events_start = schedule.events.order(start_time: :asc, end_time: :asc)
+			schedule_events_end = schedule.events.order(end_time: :desc)
+			Schedule.find(schedule_id).update(num_events: (schedule.num_events + 1), 
+			start_time: schedule_events_start.first.start_time, end_time: schedule_events_end.first.end_time)
 		end
 
 
@@ -232,9 +230,10 @@ class UsersController < ApplicationController
 
 	def add_new_event_to_schedule
 		@errors = []
+		@schedule_errors = []
 		user_id = current_user.id
 		schedule_id = params[:schedule_id].to_i
-		
+
 		if params[:title].empty? || params[:start_time].empty? || params[:end_time].empty? || params[:address].empty?
 			@errors.push("Invalid Input: Non-filled fields")
 			redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors
@@ -246,7 +245,7 @@ class UsersController < ApplicationController
 		end_time = params[:end_time].to_i
 		address = params[:address]
 
-		
+
 		# Validate inputs
 		if (title.length > MAX_TITLE_LENGTH)
 			@errors.push("Invalid Title: More than 128 characters")
@@ -256,6 +255,15 @@ class UsersController < ApplicationController
 		end
 		if ((end_time % 100) % 60) != (end_time % 100) || (end_time % 2400) != end_time
 			@errors.push("Invalid Time: End Time not correct format [hhmm]")
+		end
+
+		schedule = Schedule.find(schedule_id)
+
+		if (start_time < schedule.start_time)
+			@schedule_errors.push("Invalid Start Time: Before schedule starts.")
+		end
+		if (end_time > schedule.end_time)
+			@schedule_errors.push("Invalid End Time: After schedule ends.")
 		end
 
 		# If any errors occur, reject event creation and display errors
@@ -279,7 +287,10 @@ class UsersController < ApplicationController
 		end
 
 		schedule = Schedule.find(schedule_id)
-		Schedule.find(schedule_id).update(num_events: (schedule.num_events + 1))
+		schedule_events_start = schedule.events.order(start_time: :asc, end_time: :asc)
+		schedule_events_end = schedule.events.order(end_time: :desc)
+		Schedule.find(schedule_id).update(num_events: (schedule.num_events + 1), 
+			start_time: schedule_events_start.first.start_time, end_time: schedule_events_end.first.end_time)
 
 		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors
 
@@ -293,7 +304,10 @@ class UsersController < ApplicationController
 		SsEsRelation.where(schedule_id: schedule_id, event_id: event_id).destroy_all
 
 		schedule = Schedule.find(schedule_id)
-		Schedule.find(schedule_id).update(num_events: (schedule.num_events - 1))
+		schedule_events_start = schedule.events.order(start_time: :asc, end_time: :asc)
+		schedule_events_end = schedule.events.order(end_time: :desc)
+		Schedule.find(schedule_id).update(num_events: (schedule.num_events - 1), 
+			start_time: schedule_events_start.first.start_time, end_time: schedule_events_end.first.end_time)
 
 		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id]
 	end

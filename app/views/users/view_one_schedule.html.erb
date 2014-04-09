@@ -6,6 +6,14 @@
 	<div class="row">
 		<!-- SCHEDULE VIEW -->
 		<div class="col-sm-6 blog-main">
+			<% if not @schedule_errors.nil? %>
+				<h4> ERRORS: </h4>
+				<ul>
+					<% @schedule_errors.each do |err| %>
+						<li><%= err %></li>
+					<% end %>
+				</ul>
+			<% end %>
 			<table class="table table-striped">
 				<thead>
 					<th>#</th>
