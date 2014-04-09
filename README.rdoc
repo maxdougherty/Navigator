@@ -26,5 +26,4 @@ rails s
 
 The application is deployed on http://dry-fortress-4431.herokuapp.com/
 
-Codeship:
-https://www.codeship.io/projects/a7cb34c0-a1b7-0131-d8a7-5a24b0f2d48f/status
+![Codeship Stats](https://www.codeship.io/projects/a7cb34c0-a1b7-0131-d8a7-5a24b0f2d48f/status)
