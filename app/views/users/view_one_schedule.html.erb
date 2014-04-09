@@ -19,6 +19,7 @@
 					<th>#</th>
 					<th>Event</th>
 					<th>Time</th>
+					<th>Duration</th>
 					<th>Location</th>
 					<th>Actions</th>
 				</thead>
@@ -36,6 +37,15 @@
 							<span class="glyphicon glyphicon-arrow-right"></span>
 							<%= (e.end_time-(e.end_time%100))/100 %>:<%if(e.end_time % 100)<10%>0<%end%><%= (e.end_time % 100) %><br>
 						</td>
+
+						<td class="view_event_list_text">
+							<% if((e.duration-(e.duration%100))/100) > 0%><%= (e.duration-(e.duration%100))/100 %> hrs,<%end%> <%= e.duration%60 %> mins<br>
+						</td>
+
+						<td class="view_event_list_text">
+							<% if((e.duration-(e.duration%100))/100) > 0%><%= (e.duration-(e.duration%100))/100 %> hrs,<%end%> <%= e.duration%60 %> mins<br>
+						</td>
+
 						<td class="view_event_list_text">
 							<%= e.address.split.map(&:capitalize).join(' ') %>
 						</td>
@@ -84,6 +94,9 @@
 				<% label_tag(:end_time, "End Time: ") %>
 				<%= text_field_tag(:end_time, nil,
 					placeholder: 'End Time (e.g. 1430)', :class => "input-field") %><br>
+				<% label_tag(:duration, "Duration: ") %>
+				<%= text_field_tag(:duration, nil, 
+					placeholder: 'Duration (e.g. 100)', :class => "input-field") %><br>
 				<%= text_field_tag(:address, nil,
 					placeholder: 'Address', :class => "input-field") %><br>
 				<%= label_tag(:saving, "Save Event") %>
@@ -116,6 +129,9 @@
 						<span class="glyphicon glyphicon-arrow-right"></span>
 						<%= (e.end_time-(e.end_time%100))/100 %>:<%if(e.end_time % 100)<10%>0<%end%><%= (e.end_time % 100) %><br>
 					</td>
+
+
+
 					<td class = "view_event_list_text">
 						<%= e.address.split.map(&:capitalize).join(' ') %><br>
 					</td>

@@ -50,7 +50,7 @@ class UsersController < ApplicationController
 		@errors = []
 
 		# Check to make sure no parameters are empty. If so, reject immediately
-		if params[:title].empty? || params[:start_time].empty? || params[:end_time].empty? || params[:address].empty?
+		if params[:title].empty? || params[:start_time].empty? || params[:end_time].empty? || params[:duration].empty? || params[:address].empty?
 			@errors.push("Invalid Input: Non-filled fields")
 			render :add_event
 			return
@@ -59,7 +59,9 @@ class UsersController < ApplicationController
 		title = params[:title]
 		start_time = params[:start_time].to_i
 		end_time = params[:end_time].to_i
+		duration = params[:duration].to_i
 		address = params[:address]
+
 
 		# Validate inputs
 		if (title.length > MAX_TITLE_LENGTH)
@@ -71,6 +73,12 @@ class UsersController < ApplicationController
 		if ((end_time % 100) % 60) != (end_time % 100) || (end_time % 2400) != end_time
 			@errors.push("Invalid Time: End Time not correct format [hhmm]")
 		end
+		if ((end_time - start_time) < duration)
+			@errors.push("Duration is longer than the time frame.")
+		end
+		if(duration > 2400)
+			@errors.push("Duration is longer than 24 hours, please pick another event.")
+		end
 
 		# If any errors occur, reject event creation and display errors
 		if not @errors.empty?
@@ -79,7 +87,7 @@ class UsersController < ApplicationController
 		end
 
 		# Create new event through user to create association
-		event = current_user.events.create(title: title, start_time: start_time, end_time: end_time, address: address)
+		event = current_user.events.create(title: title, start_time: start_time, end_time: end_time, address: address, duration: duration)
 		if event.latitude.nil? || event.longitude.nil?
 			@errors.push("Invalid Location: Address could not be translated")
 			current_user.events.find(event.id).destroy
@@ -106,6 +114,7 @@ class UsersController < ApplicationController
 		title = params[:title]
 		start_time = params[:start_time].to_i
 		end_time = params[:end_time].to_i
+		duration = params[:duration].to_i
 		address = params[:address]
 
 		# Validate inputs
@@ -118,6 +127,12 @@ class UsersController < ApplicationController
 		if ((end_time % 100) % 60) != (end_time % 100) || (end_time % 2400) != end_time
 			@errors.push("Invalid Time: End Time not correct format [hhmm]")
 		end
+		if ((end_time - start_time) < duration)
+			@errors.push("Duration is longer than the time frame.")
+		end
+		if(duration > 2400)
+			@errors.push("Duration is longer than 24 hours, please pick another event.")
+		end
 
 		# If any errors occur, reject event creation and display errors
 		if not @errors.empty?
@@ -128,7 +143,7 @@ class UsersController < ApplicationController
 
 		# Create new event through user to create association
 		old_event = current_user.events.find(id)
-		current_user.events.find(id).update(title: title, start_time: start_time, end_time: end_time, address: address)
+		current_user.events.find(id).update(title: title, start_time: start_time, end_time: end_time, address: address, duration: duration)
 		new_event = current_user.events.find(id)
 
 		# Due to behavior of geocoder, have to check that update does not corrupt address
@@ -174,6 +189,7 @@ class UsersController < ApplicationController
 		start_time = params[:start_time].to_i
 		end_time = params[:end_time].to_i
 		day = params[:day].to_i
+
 
 		if (title.length > MAX_TITLE_LENGTH)
 			@errors.push("Invalid Title: More than 128 characters")
@@ -243,6 +259,7 @@ class UsersController < ApplicationController
 		title = params[:title]
 		start_time = params[:start_time].to_i
 		end_time = params[:end_time].to_i
+		duration = params[:duration].to_i
 		address = params[:address]
 
 
@@ -273,7 +290,7 @@ class UsersController < ApplicationController
 		end
 
 		# Create new event through user to create association
-		event = Schedule.find(schedule_id).events.create(title: title, start_time: start_time, end_time: end_time, address: address)
+		event = Schedule.find(schedule_id).events.create(title: title, start_time: start_time, end_time: end_time, address: address, duration: duration)
 
 		if event.latitude.nil? || event.longitude.nil?
 			@errors.push("Invalid Location: Address could not be translated")
