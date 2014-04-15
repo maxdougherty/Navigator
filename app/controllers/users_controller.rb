@@ -323,7 +323,7 @@ class UsersController < ApplicationController
 		schedule = Schedule.find(schedule_id)
 		schedule_events_start = schedule.events.order(start_time: :asc, end_time: :asc)
 		schedule_events_end = schedule.events.order(end_time: :desc)
-		if (schedule.num_events = 1)
+		if (schedule.num_events != 1)
 			Schedule.find(schedule_id).update(num_events: (schedule.num_events - 1), 
 				start_time: schedule_events_start.first.start_time, end_time: schedule_events_end.first.end_time)
 		else
