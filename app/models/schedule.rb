@@ -6,6 +6,35 @@ class Schedule < ActiveRecord::Base
 	has_many :events, through: :ss_es_relations #, order: [:start_time, :end_time]
 
 
+	require "json"
+	require "net/http"
+	require "uri"
+
+	def self.open(url)
+		return Net::HTTP.get(URI.parse(url))
+	end
+
+	def self.travel_time(origin, destination)
+		url = "http://maps.googleapis.com/maps/api/directions/json?"
+		# Add origin
+		url += "origin=" + origin.latitude.to_s + "," + origin.longitude.to_s
+		# Add destination
+		url += "&destination=" + destination.latitude.to_s + "," + destination.longitude.to_s
+		# Add additional params [ALWAYS WALKING]
+		# TODO: Add ability to indicate travel type
+		url += "&sensor=false" + "&mode=walking"
+		transit_JSON = open(url)
+		transit_info = JSON.parse(transit_JSON)
+
+		transit_time = transit_info["routes"].first["legs"].first["duration"]["text"].split(" ")
+		if (transit_time.length == 4)
+			return transit_time[0].to_i * 60 + transit_time[2].to_i
+		else
+			return transit_time[0].to_i
+		end
+	end
+
+
 	# # Models are magic. All code below is unused. -Max
 
 	# MAX_TITLE_LENGTH = 128

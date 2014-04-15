@@ -11,6 +11,7 @@ class Event < ActiveRecord::Base
 
 	after_validation :geocode, :if => :address_changed?
 
+
 	# Models are magic. All code below is unused. -Max
 
 	# MAX_TITLE_LENGTH = 128
