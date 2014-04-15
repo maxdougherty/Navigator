@@ -323,9 +323,13 @@ class UsersController < ApplicationController
 		schedule = Schedule.find(schedule_id)
 		schedule_events_start = schedule.events.order(start_time: :asc, end_time: :asc)
 		schedule_events_end = schedule.events.order(end_time: :desc)
-		Schedule.find(schedule_id).update(num_events: (schedule.num_events - 1), 
-			start_time: schedule_events_start.first.start_time, end_time: schedule_events_end.first.end_time)
-
+		if (schedule.num_events = 1)
+			Schedule.find(schedule_id).update(num_events: (schedule.num_events - 1), 
+				start_time: schedule_events_start.first.start_time, end_time: schedule_events_end.first.end_time)
+		else
+			Schedule.find(schedule_id).update(num_events: (schedule.num_events - 1), 
+				start_time: 0, end_time: 2359)
+		end
 		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id]
 	end
 
