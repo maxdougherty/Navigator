@@ -39,7 +39,7 @@
 						</td>
 
 						<td class="view_event_list_text">
-							<% if((e.duration-(e.duration%100))/100)>10%>0<%= (e.duration-(e.duration%100))/100 %> hrs,<%end%> <%= e.duration%60 %> mins<br>
+							<% if((e.duration-(e.duration%100))/100)<10%>0<%= (e.duration-(e.duration%100))/100 %> hrs,<%end%> <%= e.duration%60 %> mins<br>
 						</td>
 
 						<td class="view_event_list_text">
