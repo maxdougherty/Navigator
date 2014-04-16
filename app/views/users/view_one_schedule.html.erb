@@ -72,8 +72,7 @@
       }
     </style>
 
-
-    <script src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
     <script>
       var directionsDisplay;
       var directionsService = new google.maps.DirectionsService();
@@ -92,8 +91,12 @@
 
 		  map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
 		  directionsDisplay.setMap(map);
-		  directionsDisplay.setPanel(document.getElementById("directionsPanel"));
+		}
 
+		function calcRoute() {
+			var start;
+			var end;
+			var waypts = [];
 		<% @schedule_events.each_with_index do |e, index| %>
 			var newLat = new google.maps.LatLng(<%=e.latitude%>, <%=e.longitude%>);
 		    if (index==0) {
