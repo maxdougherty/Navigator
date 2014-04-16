@@ -76,13 +76,19 @@
     <script src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
     <script>
       function initialize() {
+<<<<<<< Updated upstream
 		  var myLatlng = new google.maps.LatLng(37.8,-122.3);
+=======
+		  var myLatlng = new google.maps.LatLng(37.8,-122);;
+>>>>>>> Stashed changes
 		  var mapOptions = {
 		    zoom: 10,
 		    center: myLatlng
 		  }
 
 		  var map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+
+
 
 		<% @schedule_events.each_with_index do |e, index| %>
 			var newLat = new google.maps.LatLng(<%=e.latitude%>, <%=e.longitude%>);
@@ -92,9 +98,6 @@
 		     
 		  });
 		  <% end %>
-
-
-
 
 
 
