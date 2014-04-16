@@ -79,6 +79,9 @@ class UsersController < ApplicationController
 		if(duration > 2400)
 			@errors.push("Duration is longer than 24 hours, please pick another event.")
 		end
+		if ((duration % 100) % 60) != (duration % 100) || (duration % 2400) != duration
+			@errors.push("Duration is not in correct format[hhmm]")
+		end
 
 		# If any errors occur, reject event creation and display errors
 		if not @errors.empty?
@@ -281,6 +284,10 @@ class UsersController < ApplicationController
 		end
 		if (end_time > schedule.end_time)
 			@schedule_errors.push("Invalid End Time: After schedule ends.")
+		end
+
+		if ((duration % 100) % 60) != (duration % 100) || (duration % 2400) != duration
+			@errors.push("Duration is not in correct format[hhmm]")
 		end
 
 		# If any errors occur, reject event creation and display errors
