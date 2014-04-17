@@ -16,6 +16,8 @@ class Schedule < ActiveRecord::Base
     require "json"
     require "net/http"
     require "uri"
+    require 'event'
+
 
     def self.open(url)
         return Net::HTTP.get(URI.parse(url))
@@ -36,7 +38,7 @@ class Schedule < ActiveRecord::Base
 
         transit_time = transit_info["routes"].first["legs"].first["duration"]["text"].split(" ")
         if (transit_time.length == 4)
-            return transit_time[0].to_i * 60 + transit_time[2].to_i
+            return transit_time[0].to_i * 10 + transit_time[2].to_i
         else
             return transit_time[0].to_i
         end
@@ -87,10 +89,10 @@ class Schedule < ActiveRecord::Base
         number_free_slots = 0
         total_free_time = 0
         for node in itin
-            if node.start_time < earliest && node.type == 0
-                earliest = node.starttime
+            if node.start < earliest && node.type == 0
+                earliest = node.start
             end
-            if node.end_time > latest && node.type == 0
+            if node.endtime > latest && node.type == 0
                 latest = node.endtime
             end
             if node.type == 2
@@ -225,7 +227,7 @@ class Schedule < ActiveRecord::Base
         end
     end
 
-    def self.add(itiner, event, fits_start)
+    def self.sits(itiner, event, fits_start)
         length = itiner.length
         e_start = event.start_time
         e_end = event.end_time
@@ -263,8 +265,8 @@ class Schedule < ActiveRecord::Base
         #If we are working with an itinerary with events already added
         else
             #Gather the start/end time of our last free time node
-            free_start = itiner[length - 1].start_time
-            free_end = itiner[length - 1].end_time
+            free_start = itiner[length - 1].start
+            free_end = itiner[length - 1].endtime
             #The most recent scheduled event should be right before the last node
             prev_event = itiner[length - 2]
             prev_event_end = prev_event.end_time
@@ -298,7 +300,16 @@ class Schedule < ActiveRecord::Base
         return itiner
     end
           
+	def self.testAdd
+		n = Node.new(800, 2400, 1400, 1, nil)
+		e = Event.create(title:"Event1",address:"Soda Hall", start_time:800, end_time:1200, duration:100)
+		itin = [n]
 
+		newItin = sits(itin, e, 800)
+
+		# [8-9, F9-24]
+		f1 = newItin[1].type == 1 && newItin[1].start == 9
+	end
 
 
 end
