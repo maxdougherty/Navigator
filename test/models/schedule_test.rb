@@ -1,7 +1,8 @@
 require 'test_helper'
 
+require_relative '../../app/models/event'
+
 class ScheduleTest < ActiveSupport::TestCase
-  # test "the truth" do
-  #   assert true
-  # end
+
+	
 end
