@@ -86,7 +86,6 @@ class Schedule < ActiveRecord::Base
         if rem_events.empty?
             return [itin, score(itin, opt_flag)]
         end
-        for
     end
     
 
@@ -346,8 +345,12 @@ class Schedule < ActiveRecord::Base
 
         return itiner
     end
+
+    def self.new_node(starttime,endtime,duration,type,event)
+    	return Node.new(starttime,endtime,duration,type,event)
+    end
        
-    def new_event(title, start_time, end_time, duration, address)
+    def self.new_event(title, start_time, end_time, duration, address)
         return Event.create(title: title, start_time: start_time, 
             end_time: end_time, duration: duration, address: address)
     end
