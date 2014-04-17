@@ -205,7 +205,12 @@ class Schedule < ActiveRecord::Base
             new_hour = (new_hour - 1) % 24
             new_minute = new_minute % 60
         end
-        return new_hour * 100 + new_minute
+        a = new_hour * 100 + new_minute
+        if a < 5
+        	return 0
+        else 
+        	return new_hour * 100 + new_minute
+        end
     end
 
 #last event index or -1 if out of array bounds
@@ -283,13 +288,14 @@ class Schedule < ActiveRecord::Base
             #Gather useful var and pop off the old freespace
             itin_start = itiner[0].start
             itin_end = itiner[0].endtime
+            itin_end = 2400
             itiner.pop()
 
             #if there is free time before the scheduled event
             if itin_start != fits_start
                 #Create the new free time node, and the new event node
-                first_free = Node.new(itin_start, e_start, 
-                                      time_between(itin_start, e_start), @@FREE_ID,nil)
+                first_free = Node.new(itin_start, fits_start, 
+                                      time_between(e_start, itin_start), @@FREE_ID,nil)
                 #push nodes to itinerary
                 itiner.push(first_free)
             end
@@ -302,7 +308,7 @@ class Schedule < ActiveRecord::Base
             #If there is free time after the event, push the node to the itin as well
             if itin_end != e_end
                 last_free = Node.new(fits_end, itin_end, 
-                                     time_between(fits_end, itin_end), @@FREE_ID,nil)
+                                     time_between(itin_end, fits_end), @@FREE_ID,nil)
                 itiner.push(last_free)
             end
 
@@ -322,7 +328,7 @@ class Schedule < ActiveRecord::Base
             itiner.pop()
 
             #If there is free time after our previous event, make a free time node
-            if fits_travel_start != prev_event_end
+            if fits_travel_start > prev_event_end
                 first_free = Node.new(prev_event_end, fits_travel_start, 
                                  time_between(prev_event_end, fits_travel_start), @@FREE_ID,nil)
                 itiner.push(first_free)
