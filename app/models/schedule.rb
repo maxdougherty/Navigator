@@ -11,6 +11,8 @@ class Schedule < ActiveRecord::Base
     @@FREE_ID = 1
     @@TRAVEL_ID = 2
 
+    INFINITY = Float::INFINITY
+
 
 
     require "json"
@@ -37,8 +39,8 @@ class Schedule < ActiveRecord::Base
         url += "&sensor=false" + "&mode=walking"
         transit_JSON = open(url)
         transit_info = JSON.parse(transit_JSON)
-
         transit_time = transit_info["routes"].first["legs"].first["duration"]["text"].split(" ")
+        # Could cause errors if no route exists
         if (transit_time.length == 4)
             if (transit_time[1] = "days")
                 return 2359
@@ -66,10 +68,31 @@ class Schedule < ActiveRecord::Base
     # Dalton: Sits (formerly known as Add)
     # Max: Dynamic Program
 
+
     # TODO: Add constraints
-    def self.schedule_events(itin, e, rem_events)
+    def self.schedule_events(itin, e, rem_events, opt_flag)
+        if itin.nil? or e.nil?
+            itin = []
+            sched_start = find_sched_start()
+            sched_end = find_sched_end()
+            itin.push(Node.new(sched_start, sched_end, time_between(sched_start, sched_end), 1, nil))
+        end
+        # TODO: CHECK MEMOIZED VALUE
+        fits_value = fits(itin, e)
+        if not fits_value
+            return [itin, INFINITY]
+        end
+        new_itin = sits(itin, e, fits_value)
+        if rem_events.empty?
+            return [itin, score(itin, opt_flag)]
+        end
+        for
     end
     
+
+
+
+
     #Ryan DID THIS MESS needs travel time
     #first if checks free type, second checks start within free slot, third checks start + duration finishes in time
      def self.fits(itinerary, event)
@@ -323,7 +346,13 @@ class Schedule < ActiveRecord::Base
 
         return itiner
     end
-          
+       
+    def new_event(title, start_time, end_time, duration, address)
+        return Event.create(title: title, start_time: start_time, 
+            end_time: end_time, duration: duration, address: address)
+    end
+    # TESTING REGION
+
 	def self.testAdd
 		#Create initial freetime node from 8am to 12pm
 		firstNode = Node.new(800, 2400, 1600, 1, nil)
@@ -364,5 +393,7 @@ class Schedule < ActiveRecord::Base
 
 	end
 
+    def self.test
+    end
 
 end
