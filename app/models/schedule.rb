@@ -275,16 +275,18 @@ class Schedule < ActiveRecord::Base
             free_end = itiner[length - 1].endtime
             #The most recent scheduled event should be right before the last node
             prev_event = itiner[length - 2]
-            prev_event_end = prev_event.end_time
+            prev_event_end = prev_event.endtime
             #Travel time between prev. event and event we want to schedule
-            travel_time = travel_time(prev_event, event)
+            travel_time = travel_time(prev_event.event, event)
+            puts travel_time
             #Time we should start traveling
-            fits_travel_start = time_minus(fits_start, travel_time)
+            fits_travel_start = time_minus_duration(fits_start, travel_time)
+            itiner.pop()
 
             #If there is free time after our previous event, make a free time node
             if fits_travel_start != prev_event_end
-                first_free = Node.new(prev_event_end, time_travel_start, 
-                                 time_between(prev_event_end, time_travel_start), @@FREE_ID,nil)
+                first_free = Node.new(prev_event_end, fits_travel_start, 
+                                 time_between(prev_event_end, fits_travel_start), @@FREE_ID,nil)
                 itiner.push(first_free)
             end
 
@@ -296,9 +298,9 @@ class Schedule < ActiveRecord::Base
             itiner.push(event_node)
 
             #If there is free time at the end of itiner, free and push free space node
-            if fits_end != itiner_end
-                last_free = Node.new(fits_end, itiner_end,
-                         time_between(fits_end, itiner_end), @@FREE_TIME,nil)
+            if fits_end != free_end
+                last_free = Node.new(fits_end, free_end,
+                         time_between(fits_end, free_end), @@FREE_ID,nil)
                 itiner.push(last_free)
             end
         end
@@ -307,14 +309,35 @@ class Schedule < ActiveRecord::Base
     end
           
 	def self.testAdd
-		n = Node.new(800, 2400, 1400, 1, nil)
+		#Create initial freetime node from 8am to 12pm
+		firstNode = Node.new(800, 2400, 1600, 1, nil)
 		e = Event.create(title:"Event1",address:"Soda Hall", start_time:800, end_time:1200, duration:100)
-		itin = [n]
+		itin = [firstNode]
+
 
 		newItin = sits(itin, e, 800)
+		# [E:8-9, F:9-24]
+		#The first node should contain the event and end at 900
+		f1 = newItin[0].type == 0 && newItin[0].endtime == 900
 
-		# [8-9, F9-24]
-		f1 = newItin[1].type == 1 && newItin[1].start == 9
+
+		e1 = Event.create(title:"Event2",address:"Sproul Plaza, Berkeley, CA", start_time:1000, end_time:1200, duration:200)
+		
+		#[E:8-9, F:9-10ish, travel:0015, E:10-12, F12-24]
+		newItin = sits(newItin, e1, 1000)
+		f2 = newItin[1].type == 1 
+		f3 = newItin[2].type == 2
+		s3 = newItin[1].start
+		f4 = newItin[3].type == 0 && newItin[3].endtime == 1200
+		f4 = newItin[4].type == 1 && newItin[4].duration ==1200
+
+		return ["Node 0 is even ending at 9: ",f1,
+			"Node 1 is freetime: ",f2,
+			"Node 2 is type travel: ", f3,
+			"Duration of travel-time: ", s3,
+			"Node 3 is event ending at 1200: " , f4,
+			newItin]
+		# return newItin
 	end
 
 
