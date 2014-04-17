@@ -73,22 +73,37 @@ class Schedule < ActiveRecord::Base
     #Ryan DID THIS MESS needs travel time
     #first if checks free type, second checks start within free slot, third checks start + duration finishes in time
      def self.fits(itinerary, event)
+     	#If no free space left, short-circuit
+     	if itinerary[itinerary.length - 1].type == 0
+     		return false
+     	end
+
+     	#Then the Node after the last event in the itin must be contain Freespace
         free = lastevent(itinerary) + 1
         if free == 0
             return event.start_time
         end
+
+        #Calculate the time it takes to get to the prev. event from our new event
+        #If the start time is after the start of the free time plus travel time
         travel = travel_time(itinerary[free-1].event, event)
         if event.start_time >= itinerary[free].start + travel
             return event.start_time
         end
+
+        # Check if the end time of event can fit in freetime window
         if event.end_time - duration >= itinerary[free].start + travel
             return itinerary[free].start + travel
         end
+        #No space :,(
         return false
     end
 
     
     def self.score(itin,optim)
+    	#By the end of the following for loop:
+    	#earliest- contains the earliest event start time of the itiner
+    	#latest- contains the latest event end time of the itiner
         earliest = 2500
         latest = 0
         total_travel_time = 0
@@ -109,18 +124,19 @@ class Schedule < ActiveRecord::Base
                 number_free_slots += 1
             end
         end
+
         case optim
-        when 0  #minimize total travel time
-            return total_travel_time
-        when 1  #minimize total free time 
-            return total_free_time
-        when 2 #minimize number free slots (gaps)
-            return number_free_slots
-        when 3 #maximize free time
-            sched_time = latest - earliest
-            return sched_time - total_free_time
-        else #default
-            return total_travel_time
+	        when 0  #minimize total travel time
+	            return total_travel_time
+	        when 1  #minimize total free time  // WHAT why would someone do this?
+	            return total_free_time
+	        when 2 #minimize number free slots (gaps)
+	            return number_free_slots
+	        when 3 #maximize free time
+	            sched_time = latest - earliest
+	            return sched_time - total_free_time
+	        else #default
+	            return total_travel_time
         end
     end
     
@@ -316,28 +332,36 @@ class Schedule < ActiveRecord::Base
 
 
 		newItin = sits(itin, e, 800)
-		# [E:8-9, F:9-24]
-		#The first node should contain the event and end at 900
-		f1 = newItin[0].type == 0 && newItin[0].endtime == 900
+		# Node 0 is even ending at 9
+		g1 = newItin[0].type == 0 && newItin[0].endtime == 900
 
 
 		e1 = Event.create(title:"Event2",address:"Sproul Plaza, Berkeley, CA", start_time:1000, end_time:1200, duration:200)
-		
-		#[E:8-9, F:9-10ish, travel:0015, E:10-12, F12-24]
 		newItin = sits(newItin, e1, 1000)
+		# Node 1 is freetime
 		f2 = newItin[1].type == 1 
+		# Node 2 is type travel
 		f3 = newItin[2].type == 2
-		s3 = newItin[1].start
+		# Duration of travel-time
+		s3 = newItin[1].duration
+		# Node 3 is event ending at 1200
 		f4 = newItin[3].type == 0 && newItin[3].endtime == 1200
-		f4 = newItin[4].type == 1 && newItin[4].duration ==1200
+		# Node 4 is free time and lasts 12 hours
+		f5 = newItin[4].type == 1 && newItin[4].duration ==1200
 
-		return ["Node 0 is even ending at 9: ",f1,
-			"Node 1 is freetime: ",f2,
-			"Node 2 is type travel: ", f3,
-			"Duration of travel-time: ", s3,
-			"Node 3 is event ending at 1200: " , f4,
-			newItin]
-		# return newItin
+		e2 = Event.create(title:"Event3",address:"Delaware St, Berkeley, CA", start_time:2200, end_time:2230, duration:30)
+		newItin = sits(newItin, e2, 2200)
+		# Node 5 is freetime
+		h2 = newItin[4].type == 1 
+		# Node 5 is type travel
+		h3 = newItin[5].type == 2
+		# Node 6 is event ending at 1200
+		h4 = newItin[6].type == 0 && newItin[6].endtime == 2230
+		# Node 7 is free time and lasts 12 hours
+		h5 = newItin[7].type == 1 && newItin[7].start == 2230
+
+		return e1 && f2 && f3 && f4 && f5 && h2 && h3 && h4 && h5
+
 	end
 
 
