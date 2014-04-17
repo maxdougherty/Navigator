@@ -112,9 +112,7 @@ class Schedule < ActiveRecord::Base
         if event.start_time >= itinerary[free].start + travel
             return event.start_time
         end
-
-        # Check if the end time of event can fit in freetime window
-        if event.end_time - duration >= itinerary[free].start + travel
+        if event.end_time - event.duration >= itinerary[free].start + travel
             return itinerary[free].start + travel
         end
         #No space :,(
@@ -216,9 +214,11 @@ class Schedule < ActiveRecord::Base
 #last event index or -1 if out of array bounds
     def self.lastevent(itinerary)
         i = itinerary.length
-        while i > 0 do
-            if (itinerary[i].type == 0)
-                return i
+        while i >= 0 do
+            if itinerary[i].nil? == false
+                if (itinerary[i].type == 0)
+                    return i
+                end
             end
             i -= 1
         end
@@ -367,7 +367,6 @@ class Schedule < ActiveRecord::Base
 		e = Event.create(title:"Event1",address:"Soda Hall", start_time:800, end_time:1200, duration:100)
 		itin = [firstNode]
 
-
 		newItin = sits(itin, e, 800)
 		# Node 0 is even ending at 9
 		g1 = newItin[0].type == 0 && newItin[0].endtime == 900
@@ -401,7 +400,23 @@ class Schedule < ActiveRecord::Base
 
 	end
 
-    def self.test
+
+    def self.testFits
+        firstNode = Node.new(800, 2400, 1600, 1, nil)
+        
+        e = Event.create(title:"Event1",address:"Soda Hall", start_time:800, end_time:1200, duration:100)
+        itin = [firstNode]
+        return fits(itin, e)
     end
 
+    def self.testFits2
+        firstNode = Node.new(800, 2400, 1600, 1, nil)
+        e = new_event("Event1", 800, 900, 1500, "Soda Hall")
+        itin = [firstNode]
+        sits(itin,e,fits(itin,e))
+        e1 = Event.create(title:"Event2",address:"2699 Derby Street, Berkeley, CA", start_time:800, end_time:900, duration:30)
+        h = fits(itin,e1)
+        return h
+    end
+        
 end

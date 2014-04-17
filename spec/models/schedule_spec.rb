@@ -40,6 +40,5 @@ describe Schedule do
   		expect(boo).to eq(true)
   	end
 
-
 end
 
