@@ -70,6 +70,14 @@
         width: 550px;
         height: 400px;
       }
+
+      #panel {
+        position: absolute;
+        top: 225px;
+        left: 74%;
+        margin-left: -180px;
+      }
+
     </style>
 
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
@@ -104,13 +112,13 @@
 		    <% end %>
 
 		  <% end %>
-
+		  var travel = document.getElementById('mode').value;
 		  var request = {
       		origin: start,
       		destination: end,
       		waypoints: waypts,
       		optimizeWaypoints: true,
-      		travelMode: google.maps.TravelMode.DRIVING
+      		travelMode: google.maps.TravelMode[travel]
   		};
   		   directionsService.route(request, function(response, status) {
     		if (status == google.maps.DirectionsStatus.OK) {
@@ -134,9 +142,15 @@
   </head>
   <body>
     <div id="map_canvas"></div>
+    <div id="panel">
+     <select id="mode" onchange="initialize();">
+      <option value="DRIVING">Driving</option>
+      <option value="WALKING">Walking</option>
+      <option value="BICYCLING">Bicycling</option>
+      <option value="TRANSIT">Transit</option>
+    </select>
+    </div>
   </body>
-
-
 
 
 
