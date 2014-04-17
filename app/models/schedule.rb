@@ -24,6 +24,8 @@ class Schedule < ActiveRecord::Base
     end
 
     # Params [origin:event, destination:event]
+    # Returns time in 24-hour format
+    # If travel time is greater than 24-hours, return 2359 as travel time
     def self.travel_time(origin, destination)
         url = "http://maps.googleapis.com/maps/api/directions/json?"
         # Add origin
@@ -38,7 +40,11 @@ class Schedule < ActiveRecord::Base
 
         transit_time = transit_info["routes"].first["legs"].first["duration"]["text"].split(" ")
         if (transit_time.length == 4)
-            return transit_time[0].to_i * 10 + transit_time[2].to_i
+            if (transit_time[1] = "days")
+                return 2359
+            else
+                return transit_time[0].to_i * 100 + transit_time[2].to_i
+            end
         else
             return transit_time[0].to_i
         end
