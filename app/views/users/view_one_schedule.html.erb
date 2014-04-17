@@ -72,15 +72,17 @@
       }
     </style>
 
-
-    <script src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
     <script>
+      var directionsDisplay;
+      var directionsService = new google.maps.DirectionsService();
+      var map;
+
       function initialize() {
-<<<<<<< Updated upstream
+      	  directionsDisplay = new google.maps.DirectionsRenderer();
 		  var myLatlng = new google.maps.LatLng(37.8,-122.3);
-=======
 		  var myLatlng = new google.maps.LatLng(37.8,-122);;
->>>>>>> Stashed changes
+		  
 		  var mapOptions = {
 		    zoom: 10,
 		    center: myLatlng
@@ -91,24 +93,43 @@
 
 
 		<% @schedule_events.each_with_index do |e, index| %>
+		  var start;
+		  var end;
+		  var waypts = [];
+		  <% @schedule_events.each_with_index do |e, index| %>
 			var newLat = new google.maps.LatLng(<%=e.latitude%>, <%=e.longitude%>);
-		    var marker = new google.maps.Marker({
-		      position: newLat,
-		      map: map,
-		     
-		  });
+		    <% if index == 0 %>
+		    	start = newLat
+		    <% elsif index == @schedule.num_events - 1 %>
+		    	end = newLat
+		    <% else %>
+		    	waypts.push({
+		    		location:newLat,
+		    		stopover:true});
+		    <% end %>
 		  <% end %>
 
+		  var request = {
+      		origin: start,
+      		destination: end,
+      		waypoints: waypts,
+      		optimizeWaypoints: true,
+      		travelMode: google.maps.TravelMode.DRIVING
+  		};
+  		   directionsService.route(request, function(response, status) {
+    		if (status == google.maps.DirectionsStatus.OK) {
+      			directionsDisplay.setDirections(response);
+    		}
+  		});
 
-
-	  }
+		  map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+		  directionsDisplay.setMap(map);
+		}
+		
 	  google.maps.event.addDomListener(window, 'load', initialize);
 
 
     </script>
-
-
-
   </head>
   <body>
     <div id="map_canvas"></div>
