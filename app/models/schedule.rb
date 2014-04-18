@@ -402,10 +402,7 @@ class Schedule < ActiveRecord::Base
             #Gather useful var and pop off the old freespace
             itin_start = itiner[0].start
             itin_end = itiner[0].endtime
-<<<<<<< HEAD
-            # itin_end = 2400
-=======
->>>>>>> " reverting changes wrote some tests + fixed some bugs in splits"
+
             itiner.pop()
 
             #if there is free time before the scheduled event
