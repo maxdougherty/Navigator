@@ -79,7 +79,7 @@
 					placeholder: "Schedule Name", :class => "input-field") %>
 				<%= select_tag(:day, options_for_select(
 					[["(Select Day) or Leave Unspecified", 0], ["Monday", 1], ["Tuesday", 2], ["Wednesday", 3], ["Thursday", 4],
-					["Friday", 5], ["Saturday", 6], ["Sunday", 7]]), :class => "form-control", :style => "height:25px") %>
+					["Friday", 5], ["Saturday", 6], ["Sunday", 7]]), :class => "form-control"  ) %>
 				<% text_field_tag(:start_time, nil,
 					placeholder: "Start Time  (e.g. 1200)", :class => "input-field") %>
 				<% text_field_tag(:end_time, nil,
