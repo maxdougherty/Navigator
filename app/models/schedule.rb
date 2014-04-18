@@ -322,7 +322,6 @@ class Schedule < ActiveRecord::Base
             prev_event_end = prev_event.endtime
             #Travel time between prev. event and event we want to schedule
             travel_time = travel_time(prev_event.event, event)
-            puts travel_time
             #Time we should start traveling
             fits_travel_start = time_minus_duration(fits_start, travel_time)
             itiner.pop()
