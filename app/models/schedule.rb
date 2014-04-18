@@ -28,6 +28,7 @@ class Schedule < ActiveRecord::Base
     # Params [origin:event, destination:event]
     # Returns time in 24-hour format
     # If travel time is greater than 24-hours, return 2359 as travel time
+    @travel_memo = {}
     def self.travel_time(origin, destination)
         url = "http://maps.googleapis.com/maps/api/directions/json?"
         # Add origin
@@ -39,7 +40,19 @@ class Schedule < ActiveRecord::Base
         url += "&sensor=false" + "&mode=walking"
         transit_JSON = open(url)
         transit_info = JSON.parse(transit_JSON)
-        transit_time = transit_info["routes"].first["legs"].first["duration"]["text"].split(" ")
+
+        transit_time = transit_info["routes"]
+        if transit_time.empty?
+            # wait statement
+            # Recursive call
+            puts "NO ROUTE FOUND"
+            puts "origin: " + origin.title + " " + origin.to_s
+            puts "destination: " + destination.title + " " + destination.to_s
+            sleep(1)
+            transit_time = travel_time(origin, destination)
+            return transit_time
+        end
+        transit_time = transit_time.first["legs"].first["duration"]["text"].split(" ")
         # Could cause errors if no route exists
         if (transit_time.length == 4)
             if (transit_time[1] = "days")
@@ -60,32 +73,125 @@ class Schedule < ActiveRecord::Base
     def find_sched_end()
         return this.events.order(end_time: :desc).first.end_time 
     end 
-            
+    
+    # Find earliest start time in a list of events
+    def self.earliest_start_time(event_list)
+        earliest_time = INFINITY
+        event_list.each do |e|
+            if e.start_time < earliest_time
+                earliest_time = e.start_time
+            end
+        end
+        return earliest_time
+    end
+
+    # Find latest end time in list of events
+    def self.latest_end_time(event_list)
+        latest_time = 0 - INFINITY
+        event_list.each do |e|
+            if e.end_time > latest_time
+                latest_time = e.end_time
+            end
+        end
+        return latest_time
+    end
 
 
     # Tarek: Score
     # Ryan: Fits
     # Dalton: Sits (formerly known as Add)
     # Max: Dynamic Program
-
+    def self.find_events(itin)
+        event_list = []
+        itin.each_with_index do |n, index|
+            if n.type == 0
+                event_list.push(n.event)
+            end
+        end
+        return event_list
+    end
 
     # TODO: Add constraints
+    @schedule_memo = {}
     def self.schedule_events(itin, e, rem_events, opt_flag)
-        if itin.nil? or e.nil?
+        # Sanitize inputs
+        # puts "CALLING FUNCTION"
+        rem_events = rem_events.to_a
+        
+        # Initialize if first call
+        if (itin.empty?)
+            # puts "Earliest Start: " + earliest_start_time(rem_events).to_s
+            # puts "Latest End: " + latest_end_time(rem_events).to_s
             itin = []
-            sched_start = find_sched_start()
-            sched_end = find_sched_end()
+            sched_start = earliest_start_time(rem_events)
+            sched_end = latest_end_time(rem_events)
             itin.push(Node.new(sched_start, sched_end, time_between(sched_start, sched_end), 1, nil))
+            @schedule_memo = {}
+            new_itin = itin
+            # puts "FINISHED INITIALIZING"
+        else
+            # Return memoized result if found
+
+            event_list = find_events(itin).to_s
+            rem_event_list = rem_events.to_s
+            # TODO: ENSURE THAT THIS LOOKUP WORKS
+            if @schedule_memo.has_key?([event_list, e, rem_event_list])
+                puts "MEMOIZING!!!!"
+                return @schedule_memo[[event_list, e, rem_event_list]]
+            end
+
+
+            # Ensure the event will fit
+            puts "FITS INPUTS ITIN: " + itin.to_s
+            puts "FITS INPUTS EVENT: " + e.title + ", " + e.to_s
+
+            fits_value = fits(itin, e)
+            # puts "FITS output: " + fits_value.to_s
+            
+            if not fits_value
+                # puts "NO FIT"
+                @schedule_memo[[event_list, e, rem_event_list]] = [itin, INFINITY]
+                return [itin, INFINITY]
+            end
+            # Add event to itinerary
+            # puts "SITS INPUT ITIN: " + itin.to_s
+            # puts "SITS INPUT EVENT: " + e.title
+            new_itin = sits(itin, e, fits_value)
+            # puts "SITS OUTPUT ITIN: " + new_itin.to_s
         end
-        # TODO: CHECK MEMOIZED VALUE
-        fits_value = fits(itin, e)
-        if not fits_value
-            return [itin, INFINITY]
-        end
-        new_itin = sits(itin, e, fits_value)
+
+        # If all events have been added, score itinerary
         if rem_events.empty?
-            return [itin, score(itin, opt_flag)]
+        	# print "LENGTH\n"
+        	# print itin.length
+        	# print "\n"
+            itin_score = score(new_itin, opt_flag)
+            @schedule_memo[[event_list, e, rem_event_list]] = [new_itin, itin_score]
+            return [new_itin, itin_score]
         end
+
+        # initialize values for following loop
+        potential_itins = []
+        min_score = INFINITY
+        best_itin = new_itin
+
+        # Find the itinerary with the best (lowest) score
+        rem_events.each_with_index do |ne, index|
+
+            events_without_ne = rem_events.dup
+            events_without_ne.delete_at(index)
+
+            temp_result = schedule_events(new_itin, ne, events_without_ne, opt_flag)
+
+            potential_itins.push(temp_result)
+            if temp_result[1] < min_score
+                min_score = temp_result[1]
+                best_itin = temp_result[0]
+            end
+        end
+        # Memoize and return result
+        @schedule_memo[[event_list, e, rem_event_list]] = [best_itin, min_score]
+        return [best_itin, min_score]
     end
     
 
@@ -101,6 +207,7 @@ class Schedule < ActiveRecord::Base
      	end
 
      	#Then the Node after the last event in the itin must be contain Freespace
+
         free = lastevent(itinerary) + 1
         if free == 0
             return event.start_time
@@ -108,14 +215,20 @@ class Schedule < ActiveRecord::Base
 
         #Calculate the time it takes to get to the prev. event from our new event
         #If the start time is after the start of the free time plus travel time
+        # puts "FITS: first event: " + itinerary[free-1].event.to_s
+        # puts "FITS: second event: " + event.to_s + event.title
+
         travel = travel_time(itinerary[free-1].event, event)
-        if event.start_time >= itinerary[free].start + travel
+
+        if event.start_time >= time_plus_duration(itinerary[free].start,travel)
+
+        # if event.start_time >= itinerary[free].start + travel
             return event.start_time
         end
 
-        # Check if the end time of event can fit in freetime window
-        if event.end_time - duration >= itinerary[free].start + travel
-            return itinerary[free].start + travel
+
+        if time_minus_duration(event.end_time,event.duration) >= time_plus_duration(itinerary[free].start , travel)
+            return itinerary[free].start
         end
         #No space :,(
         return false
@@ -131,7 +244,7 @@ class Schedule < ActiveRecord::Base
         total_travel_time = 0
         number_free_slots = 0
         total_free_time = 0
-        for node in itin
+        itin.each do |node|
             if node.start < earliest && node.type == 0
                 earliest = node.start
             end
@@ -205,20 +318,18 @@ class Schedule < ActiveRecord::Base
             new_hour = (new_hour - 1) % 24
             new_minute = new_minute % 60
         end
-        a = new_hour * 100 + new_minute
-        if a < 5
-        	return 0
-        else 
-        	return new_hour * 100 + new_minute
-        end
+        return new_hour * 100 + new_minute
     end
 
 #last event index or -1 if out of array bounds
     def self.lastevent(itinerary)
         i = itinerary.length
-        while i > 0 do
-            if (itinerary[i].type == 0)
-                return i
+
+        while i >= 0 do
+            if not itinerary[i].nil?
+                if (itinerary[i].type == 0)
+                    return i
+                end
             end
             i -= 1
         end
@@ -269,7 +380,7 @@ class Schedule < ActiveRecord::Base
                 kind = "Travel"
             end
             if not event.nil?
-                return "(start: " + @start.to_s + ", " + "event: " + event.title.to_s + ", " + "end: " + @endtime + ")" 
+                return "(start: " + @start.to_s + ", " + "event: " + event.title.to_s + ", " + "end: " + @endtime.to_s + ")" 
             else
                 return "(start: " + @start.to_s + ", " + "type: " + kind.to_s + ", " + "end: " + @endtime.to_s + ")"
             end
@@ -277,6 +388,9 @@ class Schedule < ActiveRecord::Base
     end
 
     def self.sits(itiner, event, fits_start)
+        # Added to attempt to fix -Max
+        itiner = itiner.dup
+
         length = itiner.length
         e_start = event.start_time
         e_end = event.end_time
@@ -288,14 +402,14 @@ class Schedule < ActiveRecord::Base
             #Gather useful var and pop off the old freespace
             itin_start = itiner[0].start
             itin_end = itiner[0].endtime
-            itin_end = 2400
+
             itiner.pop()
 
             #if there is free time before the scheduled event
             if itin_start != fits_start
                 #Create the new free time node, and the new event node
-                first_free = Node.new(itin_start, fits_start, 
-                                      time_between(e_start, itin_start), @@FREE_ID,nil)
+                first_free = Node.new(itin_start, e_start, 
+                                      time_between(itin_start, e_start), @@FREE_ID,nil)
                 #push nodes to itinerary
                 itiner.push(first_free)
             end
@@ -306,9 +420,10 @@ class Schedule < ActiveRecord::Base
             itiner.push(event_node)
 
             #If there is free time after the event, push the node to the itin as well
-            if itin_end != e_end
+            # FIX: e_end => fits_end -Max
+            if itin_end != fits_end
                 last_free = Node.new(fits_end, itin_end, 
-                                     time_between(itin_end, fits_end), @@FREE_ID,nil)
+                                     time_between(fits_end, itin_end), @@FREE_ID,nil)
                 itiner.push(last_free)
             end
 
@@ -321,9 +436,14 @@ class Schedule < ActiveRecord::Base
             prev_event = itiner[length - 2]
             prev_event_end = prev_event.endtime
             #Travel time between prev. event and event we want to schedule
+            # puts "SITS: prev_event: " + prev_event.to_s
+            # puts "SITS: event: " + event.to_s
             travel_time = travel_time(prev_event.event, event)
             #Time we should start traveling
-            fits_travel_start = time_minus_duration(fits_start, travel_time)
+            # print "\n"
+            # print fits_start
+            # print "\n"
+            fits_travel_start = time_minus_duration(fits_start, travel_time) 
             itiner.pop()
 
             #If there is free time after our previous event, make a free time node
@@ -367,7 +487,6 @@ class Schedule < ActiveRecord::Base
 		e = Event.create(title:"Event1",address:"Soda Hall", start_time:800, end_time:1200, duration:100)
 		itin = [firstNode]
 
-
 		newItin = sits(itin, e, 800)
 		# Node 0 is even ending at 9
 		g1 = newItin[0].type == 0 && newItin[0].endtime == 900
@@ -401,7 +520,21 @@ class Schedule < ActiveRecord::Base
 
 	end
 
-    def self.test
+    def self.testFits
+        firstNode = Node.new(800, 2400, 1600, 1, nil)
+        
+        e = Event.create(title:"Event1",address:"Soda Hall", start_time:800, end_time:1200, duration:100)
+        itin = [firstNode]
+        return fits(itin, e)
     end
 
+    def self.testFits2
+        firstNode = Node.new(800, 2400, 1600, 1, nil)
+        e = new_event("Event1", 800, 900, 1500, "Soda Hall")
+        itin = [firstNode]
+        sits(itin,e,fits(itin,e))
+        e1 = Event.create(title:"Event2",address:"2699 Derby Street, Berkeley, CA", start_time:800, end_time:900, duration:30)
+        h = fits(itin,e1)
+        return h
+    end
 end
