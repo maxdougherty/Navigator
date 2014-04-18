@@ -27,7 +27,9 @@ class UsersController < ApplicationController
 
 		@user_events = current_user.events.order(start_time: :asc, end_time: :asc)
 		@schedule = current_user.schedules.find(id)
-		@schedule_events = current_user.schedules.find(id).events.order(start_time: :asc, end_time: :asc)
+		event_list = current_user.schedules.find(id).events.order(start_time: :asc, end_time: :asc).to_a
+		itinerary = Schedule.schedule_events([], nil, event_list, 0)
+		@schedule_events = Schedule.find_events(itinerary[0])
 		@errors = params[:errors]
 		render :view_one_schedule
 	end
