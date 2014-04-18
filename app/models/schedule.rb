@@ -162,6 +162,9 @@ class Schedule < ActiveRecord::Base
 
         # If all events have been added, score itinerary
         if rem_events.empty?
+        	# print "LENGTH\n"
+        	# print itin.length
+        	# print "\n"
             itin_score = score(new_itin, opt_flag)
             @schedule_memo[[event_list, e, rem_event_list]] = [new_itin, itin_score]
             return [new_itin, itin_score]
@@ -217,13 +220,15 @@ class Schedule < ActiveRecord::Base
 
         travel = travel_time(itinerary[free-1].event, event)
 
-        if event.start_time >= itinerary[free].start + travel
+        if event.start_time >= time_plus_duration(itinerary[free].start,travel)
+
+        # if event.start_time >= itinerary[free].start + travel
             return event.start_time
         end
 
 
-        if event.end_time - event.duration >= itinerary[free].start + travel
-            return itinerary[free].start + travel
+        if time_minus_duration(event.end_time,event.duration) >= time_plus_duration(itinerary[free].start , travel)
+            return itinerary[free].start
         end
         #No space :,(
         return false
@@ -438,11 +443,14 @@ class Schedule < ActiveRecord::Base
             # puts "SITS: event: " + event.to_s
             travel_time = travel_time(prev_event.event, event)
             #Time we should start traveling
-            fits_travel_start = time_minus_duration(fits_start, travel_time)
+            # print "\n"
+            # print fits_start
+            # print "\n"
+            fits_travel_start = time_minus_duration(fits_start, travel_time) 
             itiner.pop()
 
             #If there is free time after our previous event, make a free time node
-            if fits_travel_start != prev_event_end
+            if fits_travel_start > prev_event_end
                 first_free = Node.new(prev_event_end, fits_travel_start, 
                                  time_between(prev_event_end, fits_travel_start), @@FREE_ID,nil)
                 itiner.push(first_free)
