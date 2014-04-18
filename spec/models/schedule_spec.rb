@@ -110,8 +110,28 @@ describe Schedule do
   		expect(a[1]).to eq(INFINITY)
   	end
 
-  	it "schedules too many events" do
+    it "schedules too many events" do
   		firstNode = Schedule.new_node(800,2400,1600,1,nil)
+        itin1 = [firstNode]
+  		e = Schedule.new_event("sleep",800,1000,100,"2200 Durant")
+  		e2 = Schedule.new_event("eat",900,1100,100,"2200 Durant")
+  		e3 = Schedule.new_event("work",1000,1200,100,"1515 Delaware, Berkeley")
+  		e4 = Schedule.new_event("code",1100,1300,100,"2226 Durant")
+  		e5 = Schedule.new_event("watchtv",1200,1500,300,"1527 Hearst, Berkeley")
+  		e6 = Schedule.new_event("gym",1500,1900,300,"2360 Ellsworth, Berkeley")
+  		e7 = Schedule.new_event("sleepagain",1900,2400,500,"2360 Ellsworth, Berkeley")
+  		e8 = Schedule.new_event("willnotfit",1900,2100,100,"2360 Ellsworth, Berkeley")
+  		rem_events = []
+  		rem_events.push(e2)
+  		rem_events.push(e3)
+  		rem_events.push(e4)
+  		rem_events.push(e5)
+  		rem_events.push(e6)
+  		rem_events.push(e7)
+  		rem_events.push(e8)
+  		a = Schedule.schedule_events(itin1,e,rem_events,2)
+  		INFINITY = Float::INFINITY
+  		expect(a[1]).to eq(INFINITY)
     end
     
     it "test fits no free space" do
