@@ -28,6 +28,7 @@ class Schedule < ActiveRecord::Base
     # Params [origin:event, destination:event]
     # Returns time in 24-hour format
     # If travel time is greater than 24-hours, return 2359 as travel time
+    @travel_memo = {}
     def self.travel_time(origin, destination)
         url = "http://maps.googleapis.com/maps/api/directions/json?"
         # Add origin
@@ -39,7 +40,19 @@ class Schedule < ActiveRecord::Base
         url += "&sensor=false" + "&mode=walking"
         transit_JSON = open(url)
         transit_info = JSON.parse(transit_JSON)
-        transit_time = transit_info["routes"].first["legs"].first["duration"]["text"].split(" ")
+
+        transit_time = transit_info["routes"]
+        if transit_time.empty?
+            # wait statement
+            # Recursive call
+            puts "NO ROUTE FOUND"
+            puts "origin: " + origin.title + " " + origin.to_s
+            puts "destination: " + destination.title + " " + destination.to_s
+            sleep(1)
+            transit_time = travel_time(origin, destination)
+            return transit_time
+        end
+        transit_time = transit_time.first["legs"].first["duration"]["text"].split(" ")
         # Could cause errors if no route exists
         if (transit_time.length == 4)
             if (transit_time[1] = "days")
@@ -102,47 +115,49 @@ class Schedule < ActiveRecord::Base
     @schedule_memo = {}
     def self.schedule_events(itin, e, rem_events, opt_flag)
         # Sanitize inputs
+        # puts "CALLING FUNCTION"
         rem_events = rem_events.to_a
         
         # Initialize if first call
         if (itin.empty?)
-            puts "Earliest Start: " + earliest_start_time(rem_events).to_s
-            puts "Latest End: " + latest_end_time(rem_events).to_s
+            # puts "Earliest Start: " + earliest_start_time(rem_events).to_s
+            # puts "Latest End: " + latest_end_time(rem_events).to_s
             itin = []
             sched_start = earliest_start_time(rem_events)
             sched_end = latest_end_time(rem_events)
             itin.push(Node.new(sched_start, sched_end, time_between(sched_start, sched_end), 1, nil))
             @schedule_memo = {}
             new_itin = itin
+            # puts "FINISHED INITIALIZING"
         else
             # Return memoized result if found
+
             event_list = find_events(itin).to_s
             rem_event_list = rem_events.to_s
             # TODO: ENSURE THAT THIS LOOKUP WORKS
             if @schedule_memo.has_key?([event_list, e, rem_event_list])
+                puts "MEMOIZING!!!!"
                 return @schedule_memo[[event_list, e, rem_event_list]]
             end
+
 
             # Ensure the event will fit
             puts "FITS INPUTS ITIN: " + itin.to_s
             puts "FITS INPUTS EVENT: " + e.title + ", " + e.to_s
 
             fits_value = fits(itin, e)
-            puts "FITS output: " + fits_value.to_s
+            # puts "FITS output: " + fits_value.to_s
+            
             if not fits_value
-                puts "NO FIT"
+                # puts "NO FIT"
                 @schedule_memo[[event_list, e, rem_event_list]] = [itin, INFINITY]
                 return [itin, INFINITY]
             end
             # Add event to itinerary
-            puts "NEW ITIN input: " + itin.to_s
-            puts "NEW ITIN input event: " + e.title
+            # puts "SITS INPUT ITIN: " + itin.to_s
+            # puts "SITS INPUT EVENT: " + e.title
             new_itin = sits(itin, e, fits_value)
-            puts "NEW ITIN output: " + new_itin.to_s
-            puts "REM EVENTS: " + rem_events.to_s
-            if new_itin.nil?
-                
-            end
+            # puts "SITS OUTPUT ITIN: " + new_itin.to_s
         end
 
         # If all events have been added, score itinerary
@@ -189,15 +204,19 @@ class Schedule < ActiveRecord::Base
      	end
 
      	#Then the Node after the last event in the itin must be contain Freespace
-        free = lastevent(itinerary) + 1
 
+        free = lastevent(itinerary) + 1
         if free == 0
             return event.start_time
         end
 
         #Calculate the time it takes to get to the prev. event from our new event
         #If the start time is after the start of the free time plus travel time
+        # puts "FITS: first event: " + itinerary[free-1].event.to_s
+        # puts "FITS: second event: " + event.to_s + event.title
+
         travel = travel_time(itinerary[free-1].event, event)
+
         if event.start_time >= itinerary[free].start + travel
             return event.start_time
         end
@@ -221,7 +240,6 @@ class Schedule < ActiveRecord::Base
         number_free_slots = 0
         total_free_time = 0
         itin.each do |node|
-            puts "LOOP"
             if node.start < earliest && node.type == 0
                 earliest = node.start
             end
@@ -313,6 +331,7 @@ class Schedule < ActiveRecord::Base
                     return i
                 end
             end
+            i -= 1
         end
         return -1
     end
@@ -361,7 +380,7 @@ class Schedule < ActiveRecord::Base
                 kind = "Travel"
             end
             if not event.nil?
-                return "(start: " + @start.to_s + ", " + "event: " + event.title.to_s + ", " + "end: " + @endtime + ")" 
+                return "(start: " + @start.to_s + ", " + "event: " + event.title.to_s + ", " + "end: " + @endtime.to_s + ")" 
             else
                 return "(start: " + @start.to_s + ", " + "type: " + kind.to_s + ", " + "end: " + @endtime.to_s + ")"
             end
@@ -383,7 +402,7 @@ class Schedule < ActiveRecord::Base
             #Gather useful var and pop off the old freespace
             itin_start = itiner[0].start
             itin_end = itiner[0].endtime
-            itin_end = 2400
+            # itin_end = 2400
             itiner.pop()
 
             #if there is free time before the scheduled event
@@ -417,6 +436,8 @@ class Schedule < ActiveRecord::Base
             prev_event = itiner[length - 2]
             prev_event_end = prev_event.endtime
             #Travel time between prev. event and event we want to schedule
+            # puts "SITS: prev_event: " + prev_event.to_s
+            # puts "SITS: event: " + event.to_s
             travel_time = travel_time(prev_event.event, event)
             #Time we should start traveling
             fits_travel_start = time_minus_duration(fits_start, travel_time)
