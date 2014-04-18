@@ -7,7 +7,7 @@ p browser.title
 
 ##Sign up##
 browser.find_element(name: "user[email]").click
-browser.find_element(name: "user[email]").send_keys "user11@navigator.com"
+browser.find_element(name: "user[email]").send_keys "user99@navigator.com"
 browser.find_element(name: "user[password]").send_keys "password"
 browser.find_element(name: "user[password_confirmation]").send_keys "password"
 browser.find_element(name: "commit").click
