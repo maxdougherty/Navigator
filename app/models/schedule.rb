@@ -30,6 +30,12 @@ class Schedule < ActiveRecord::Base
     # If travel time is greater than 24-hours, return 2359 as travel time
     @travel_memo = {}
     def self.travel_time(origin, destination)
+        if @travel_memo.key?([origin.id, destination.id])
+            return @travel_memo[[origin.id, destination.id]]
+        end
+        if @travel_memo.key?([destination.id,origin.id])
+            return @travel_memo[[destination.id,origin.id]]
+        end
         url = "http://maps.googleapis.com/maps/api/directions/json?"
         # Add origin
         url += "origin=" + origin.latitude.to_s + "," + origin.longitude.to_s
@@ -58,9 +64,11 @@ class Schedule < ActiveRecord::Base
             if (transit_time[1] = "days")
                 return 2359
             else
+                @travel_memo[[origin.id, destination.id]] = transit_time[0].to_i * 100 + transit_time[2].to_i
                 return transit_time[0].to_i * 100 + transit_time[2].to_i
             end
         else
+            @travel_memo[[origin.id, destination.id]] = transit_time[0].to_i
             return transit_time[0].to_i
         end
     end
@@ -127,6 +135,7 @@ class Schedule < ActiveRecord::Base
             sched_end = latest_end_time(rem_events)
             itin.push(Node.new(sched_start, sched_end, time_between(sched_start, sched_end), 1, nil))
             @schedule_memo = {}
+            @travel_memo = {}
             new_itin = itin
             # puts "FINISHED INITIALIZING"
         else
