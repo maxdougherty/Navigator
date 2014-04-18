@@ -228,7 +228,7 @@ class Schedule < ActiveRecord::Base
 
 
         if time_minus_duration(event.end_time,event.duration) >= time_plus_duration(itinerary[free].start , travel)
-            return itinerary[free].start
+            return itinerary[free].start+travel
         end
         #No space :,(
         return false
@@ -323,7 +323,7 @@ class Schedule < ActiveRecord::Base
 
 #last event index or -1 if out of array bounds
     def self.lastevent(itinerary)
-        i = itinerary.length
+        i = itinerary.length-1
 
         while i >= 0 do
             if not itinerary[i].nil?
@@ -394,8 +394,9 @@ class Schedule < ActiveRecord::Base
         length = itiner.length
         e_start = event.start_time
         e_end = event.end_time
-        e_duration = event.duration 
-        fits_end = time_plus_duration(fits_start,e_duration)
+        e_duration = event.duration
+        #DO NOT USE TIME_PLUS_DURATION
+        fits_end = fits_start+e_duration
 
       #If this is our first event added, take special precautions
         if (length == 1)

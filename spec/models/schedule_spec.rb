@@ -110,9 +110,9 @@ describe Schedule do
   		expect(a[1]).to eq(INFINITY)
   	end
 
-  	it "schedules too many events"
+    it "schedules too many events" do
   		firstNode = Schedule.new_node(800,2400,1600,1,nil)
-  		itin1 = [firstNode]
+        itin1 = [firstNode]
   		e = Schedule.new_event("sleep",800,1000,100,"2200 Durant")
   		e2 = Schedule.new_event("eat",900,1100,100,"2200 Durant")
   		e3 = Schedule.new_event("work",1000,1200,100,"1515 Delaware, Berkeley")
@@ -132,4 +132,29 @@ describe Schedule do
   		a = Schedule.schedule_events(itin1,e,rem_events,2)
   		INFINITY = Float::INFINITY
   		expect(a[1]).to eq(INFINITY)
-end
+    end
+    
+    it "test fits no free space" do
+        firstNode = Schedule.new_node(800,2400,1600,1,nil)
+  		itin1 = [firstNode]
+        e = Schedule.new_event("sleep",800,2400,1600,"2200 Durant")
+        expect(Schedule.fits(itin1,e)==800).to eq(true)
+        i1 = Schedule.sits(itin1,e,800)
+        e2 = Schedule.new_event("eat",900,1100,100,"2200 Durant")
+        expect(Schedule.fits(i1, e2)).to eq(false)
+    end
+    
+    it "test fits no free space 2" do
+        firstNode = Schedule.new_node(800,2400,1600,1,nil)
+  		itin1 = [firstNode]
+        e = Schedule.new_event("eat",900,1100,100,"2200 Durant")
+        expect(Schedule.fits(itin1,e)==900).to eq(true)
+        i1 = Schedule.sits(itin1,e,800)
+        e2 = Schedule.new_event("eat",1100,2400,1300,"2200 Durant")
+        expect(Schedule.fits(i1, e2)==1100).to eq(true)
+        i2 = Schedule.sits(i1,e2,1100)
+        e3 = Schedule.new_event("code",800,1130,100,"2200 Durant")
+        expect(Schedule.fits(i2,e3)).to eq(false)
+    end
+    
+    end
