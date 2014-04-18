@@ -171,6 +171,9 @@ class Schedule < ActiveRecord::Base
 
         # If all events have been added, score itinerary
         if rem_events.empty?
+        	# print "LENGTH\n"
+        	# print itin.length
+        	# print "\n"
             itin_score = score(new_itin, opt_flag)
             @schedule_memo[[event_list, e, rem_event_list]] = [new_itin, itin_score]
             return [new_itin, itin_score]
@@ -226,13 +229,15 @@ class Schedule < ActiveRecord::Base
 
         travel = travel_time(itinerary[free-1].event, event)
 
-        if event.start_time >= itinerary[free].start + travel
+        if event.start_time >= time_plus_duration(itinerary[free].start,travel)
+
+        # if event.start_time >= itinerary[free].start + travel
             return event.start_time
         end
 
 
-        if event.end_time - event.duration >= itinerary[free].start + travel
-            return itinerary[free].start + travel
+        if time_minus_duration(event.end_time,event.duration) >= time_plus_duration(itinerary[free].start , travel)
+            return itinerary[free].start+travel
         end
         #No space :,(
         return false
@@ -322,17 +327,12 @@ class Schedule < ActiveRecord::Base
             new_hour = (new_hour - 1) % 24
             new_minute = new_minute % 60
         end
-        a = new_hour * 100 + new_minute
-        if a < 5
-        	return 0
-        else 
-        	return new_hour * 100 + new_minute
-        end
+        return new_hour * 100 + new_minute
     end
 
 #last event index or -1 if out of array bounds
     def self.lastevent(itinerary)
-        i = itinerary.length
+        i = itinerary.length-1
 
         while i >= 0 do
             if not itinerary[i].nil?
@@ -403,22 +403,23 @@ class Schedule < ActiveRecord::Base
         length = itiner.length
         e_start = event.start_time
         e_end = event.end_time
-        e_duration = event.duration 
-        fits_end = time_plus_duration(fits_start,e_duration)
+        e_duration = event.duration
+        #DO NOT USE TIME_PLUS_DURATION
+        fits_end = fits_start+e_duration
 
       #If this is our first event added, take special precautions
         if (length == 1)
             #Gather useful var and pop off the old freespace
             itin_start = itiner[0].start
             itin_end = itiner[0].endtime
-            # itin_end = 2400
+
             itiner.pop()
 
             #if there is free time before the scheduled event
             if itin_start != fits_start
                 #Create the new free time node, and the new event node
-                first_free = Node.new(itin_start, fits_start, 
-                                      time_between(e_start, itin_start), @@FREE_ID,nil)
+                first_free = Node.new(itin_start, e_start, 
+                                      time_between(itin_start, e_start), @@FREE_ID,nil)
                 #push nodes to itinerary
                 itiner.push(first_free)
             end
@@ -432,7 +433,7 @@ class Schedule < ActiveRecord::Base
             # FIX: e_end => fits_end -Max
             if itin_end != fits_end
                 last_free = Node.new(fits_end, itin_end, 
-                                     time_between(itin_end, fits_end), @@FREE_ID,nil)
+                                     time_between(fits_end, itin_end), @@FREE_ID,nil)
                 itiner.push(last_free)
             end
 
@@ -449,7 +450,10 @@ class Schedule < ActiveRecord::Base
             # puts "SITS: event: " + event.to_s
             travel_time = travel_time(prev_event.event, event)
             #Time we should start traveling
-            fits_travel_start = time_minus_duration(fits_start, travel_time)
+            # print "\n"
+            # print fits_start
+            # print "\n"
+            fits_travel_start = time_minus_duration(fits_start, travel_time) 
             itiner.pop()
 
             #If there is free time after our previous event, make a free time node
