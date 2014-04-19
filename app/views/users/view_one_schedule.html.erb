@@ -86,9 +86,10 @@
 
 					
 				<% end %>
+				</tbody>
 			</table>
 			<% if (@schedule_events.length == 1 and @schedule_events[0].type == 1) and (not @newest_schedule_event.nil?) %>
-				<div class="btn-group" align="center">
+				<div class="btn-group reset-button" align="center">
 				<%= form_tag("/users/delete_all_schedule_events", method: "post") do %>
 					<% hidden_field_tag(:event_id, @newest_schedule_event) #.id%>
 					<%= hidden_field_tag(:schedule_id, @schedule.id) %>
@@ -96,6 +97,7 @@
 				<% end %>
 				</div>
 			<% end %>
+			<br><br>
 
 
   <head>
