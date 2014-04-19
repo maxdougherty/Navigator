@@ -87,16 +87,14 @@
 					
 				<% end %>
 			</table>
-			Length: <%= @schedule_events.length %>
-			Type: <%= @schedule_events[0].type %>
-			@newest_schedule_events.length = <%= @newest_schedule_events.to_s %>
 			<% if (@schedule_events.length == 1 and @schedule_events[0].type == 1) and (not @newest_schedule_event.nil?) %>
-				GOT HERE
+				<div class="btn-group" align="center">
 				<%= form_tag("/users/delete_all_schedule_events", method: "post") do %>
 					<% hidden_field_tag(:event_id, @newest_schedule_event) #.id%>
 					<%= hidden_field_tag(:schedule_id, @schedule.id) %>
 					<%= submit_tag("Reset Schedule", :class => "btn btn-lg btn-danger") %>
 				<% end %>
+				</div>
 			<% end %>
 
 
