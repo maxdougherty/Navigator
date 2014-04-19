@@ -73,6 +73,10 @@ class Schedule < ActiveRecord::Base
         end
     end
 
+    def self.travel_memo
+        return @travel_memo
+    end
+
 
     def find_sched_start()
         return this.events.order(start_time: :asc).first.start_time
@@ -121,6 +125,7 @@ class Schedule < ActiveRecord::Base
 
     # TODO: Add constraints
     @schedule_memo = {}
+
     def self.schedule_events(itin, e, rem_events, opt_flag)
         # Sanitize inputs
         # puts "CALLING FUNCTION"
@@ -135,7 +140,6 @@ class Schedule < ActiveRecord::Base
             sched_end = latest_end_time(rem_events)
             itin.push(Node.new(sched_start, sched_end, time_between(sched_start, sched_end), 1, nil))
             @schedule_memo = {}
-            @travel_memo = {}
             new_itin = itin
             # puts "FINISHED INITIALIZING"
         else
