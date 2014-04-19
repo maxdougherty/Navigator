@@ -32,7 +32,11 @@ class UsersController < ApplicationController
 		# @schedule_events = Schedule.find_events(itinerary[0])
 		@schedule_events = itinerary[0]
 		puts "SCHEDULE: " + itinerary[0].to_s
-		@errors = params[:errors]
+		puts "SCHEDULE LENGTH: " + itinerary[0].length
+		itin_type = itinerary[0]
+		itin_type = itin_type[0].type
+		puts "SCHEDULE TYPE: " + itin_type
+ 		@errors = params[:errors]
 		@newest_schedule_event = params[:newest_schedule_event]
 		render :view_one_schedule
 	end
