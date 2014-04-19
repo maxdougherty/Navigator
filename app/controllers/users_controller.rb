@@ -252,6 +252,7 @@ class UsersController < ApplicationController
 			start_time: schedule_events_start.first.start_time, end_time: schedule_events_end.first.end_time)
 		end
 		event = Event.find(event_id)
+
 		@newest_schedule_event = event
 
 		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], newest_schedule_event: @newest_schedule_event
@@ -352,5 +353,15 @@ class UsersController < ApplicationController
 		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id]
 	end
 
+	def delete_all_schedule_events
+		user_id = current_user.id
+		schedule_id = params[:schedule_id].to_i
+
+		SsEsRelation.where(schedule_id: schedule_id).destroy_all
+		schedule = Schedule.find(schedule_id)
+		Schedule.find(schedule_id).update(num_events: 0, 
+				start_time: 0, end_time: 2359)
+		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id]
+	end
 
 end

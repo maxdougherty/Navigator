@@ -20,6 +20,7 @@ Navigator::Application.routes.draw do
 
   match "users/submit_new_schedule" => 'users#submit_new_schedule', :via => :post
   match "users/delete_schedule" => 'users#delete_schedule', :via => :post
+  match "users/delete_all_schedule_events" => 'users#delete_all_schedule_events', :via => :post
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
