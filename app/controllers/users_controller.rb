@@ -246,7 +246,7 @@ class UsersController < ApplicationController
 			Schedule.find(schedule_id).update(num_events: (schedule.num_events + 1), 
 			start_time: schedule_events_start.first.start_time, end_time: schedule_events_end.first.end_time)
 		end
-
+		@newest_schedule_event = event
 
 		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id]
 	end
