@@ -254,7 +254,7 @@ class UsersController < ApplicationController
 		event = Event.find(event_id)
 		@newest_schedule_event = event
 
-		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id]
+		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], newest_schedule_event: @newest_schedule_event
 	end
 
 	def add_new_event_to_schedule
