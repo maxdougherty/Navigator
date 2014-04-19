@@ -32,6 +32,7 @@ class UsersController < ApplicationController
 		# @schedule_events = Schedule.find_events(itinerary[0])
 		@schedule_events = itinerary[0]
 		@errors = params[:errors]
+		@newest_schedule_event = params[:newest_schedule_event]
 		render :view_one_schedule
 	end
 
@@ -319,7 +320,9 @@ class UsersController < ApplicationController
 		Schedule.find(schedule_id).update(num_events: (schedule.num_events + 1), 
 			start_time: schedule_events_start.first.start_time, end_time: schedule_events_end.first.end_time)
 
-		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors
+		@newest_schedule_event = event
+
+		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors, newest_schedule_event: @newest_schedule_event
 
 	end
 

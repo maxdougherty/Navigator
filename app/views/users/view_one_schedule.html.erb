@@ -3,7 +3,7 @@
 	<div class="blog-header">
 	<% days = ["None", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] %>
 	<h2><%= @schedule.title %> (<%= days[@schedule.day] %>)</h2>
-	<h4>Do not try requesting more than 4 events in a schedule.</h4>
+	<h4>Requests with more than 4 events may fail.</h4>
 	<h4>API has limited response time.</h4>
 	</div>
 	<div class="row">
@@ -33,6 +33,13 @@
 					<% node_end = n.endtime %>
 					<% node_type = n.type %>
 					<% edex = 0 %>
+					<% if @schedule_events.length == 1 and @schedule_events[0].type == 1 and (not @newest_schedule_event.nil? %>
+						<%= form_tag("/users/delete_event_from_schedule", method: "post") do %>
+							<%= hidden_field_tag(:event_id, @newest_schedule_event) %>
+							<%= hidden_field_tag(:schedule_id, @schedule.id) %>
+							<%= submit_tag("Remove Conflicting Event", :class => "btn btn-lg btn-danger") %>
+						<% end %>
+					<% end %>
 					<% if node_type == 0 %>
 						<% e = n.event %>
 						<tr>
