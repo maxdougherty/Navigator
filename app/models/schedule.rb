@@ -43,7 +43,7 @@ class Schedule < ActiveRecord::Base
         url += "&destination=" + destination.latitude.to_s + "," + destination.longitude.to_s
         # Add additional params [ALWAYS WALKING]
         # TODO: Add ability to indicate travel type
-        url += "&sensor=false" + "&mode=driving"
+        url += "&sensor=false" + "&mode=walking"
         transit_JSON = open(url)
         transit_info = JSON.parse(transit_JSON)
 

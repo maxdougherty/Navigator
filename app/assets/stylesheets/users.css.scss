@@ -32,11 +32,6 @@ textarea {
 
 }
 
-/*.center h1 {
-  margin-bottom: 10px;
-  text-align: center;
-}*/
-
 .add_event {
 	/*float:left;
 	position: relative;
@@ -129,6 +124,14 @@ textarea {
 	text-align: center;
 }
 
+/* Map and Direction Styles */
+.adp-directions {
+	width: 100%;
+} 
+
+#map-canvas {
+	width: 200px;
+}
 
 
 

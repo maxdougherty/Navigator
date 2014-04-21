@@ -170,18 +170,20 @@ class UsersController < ApplicationController
 		return
 	end
 
+	# Delete association between user and event and re-render view
 	def delete_event
 		# Convert necessary parameters into expected type
 		id = params[:event_id].to_i
 
 		# Ensure user owns event before deleting
 		if not current_user.events.where(id: id).empty?
-			current_user.events.find(id).destroy
+			UsEsRelation.where(user_id: current_user.id, event_id: id).destroy_all
 		end
+
 
 		# Redisplay the events page.
 		# TODO: update with redirect
-		redirect_to :action => 'view_events'
+		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors
 		return
 	end
 
