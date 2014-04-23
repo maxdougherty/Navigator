@@ -241,7 +241,9 @@ class Schedule < ActiveRecord::Base
 
 
         if time_minus_duration(event.end_time,event.duration) >= time_plus_duration(itinerary[free].start , travel)
-            return itinerary[free].start+travel
+            if time_plus_duration(time_plus_duration(itinerary[free].start,travel), event.duration) <= itinerary[free].endtime
+                return time_plus_duration(itinerary[free].start, travel)
+            end
         end
         #No space :,(
         return false
