@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html style="height:100%">
 <head>
   <title>Navigator</title>
   <%= stylesheet_link_tag    "application", media: "all", "data-turbolinks-track" => true %>
   <%= javascript_include_tag "application", "data-turbolinks-track" => true %>
   <%= csrf_meta_tags %>
 </head>
-<body>
+<body style="height:100%">
 
 <% if notice %>
   <!-- <p class="alert alert-notice"><% notice %></p> -->
@@ -15,7 +15,7 @@
   <!-- <p class="alert alert-error"><% alert %></p> -->
 <% end %>
 
-<div class="navbar navbar-default" role="navigation">
+<div class="navbar navbar-default" role="navigation" style="margin-bottom:0px">
   <p class= "navbar-text pull-left">
     <string>NAVIGATOR</strong> 
     <% if user_signed_in? %>
@@ -36,7 +36,7 @@
 </div>
 
 
-  <div class = "center">
+
     <%= yield %>
   </div>
 </body>

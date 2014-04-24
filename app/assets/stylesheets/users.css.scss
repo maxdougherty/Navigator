@@ -28,7 +28,7 @@ textarea {
   display: inline-block;*/
   display: table;
   margin: auto;
-  width:90%;
+  width:100%;
 
 }
 
@@ -129,9 +129,29 @@ textarea {
 	width: 100%;
 } 
 
-#map-canvas {
-	width: 200px;
+.schedule-div {
+	position: absolute;
+	left:5%;
+	top:10%;
+	width:25%;
+	max-width:550px;
+	background-color:#FFFFFF;
+	padding:5px;
+	min-width:400px;
 }
+
+.event-div {
+	position: absolute;
+	right:5%;
+	top:10%;
+	width:25%;
+	max-width:550px;
+	background-color:#FFFFFF;
+	padding:5px;
+	min-width:400px;
+}
+
+
 
 
 

@@ -1,318 +1,298 @@
 <%= stylesheet_link_tag "Navigator.css" %>
-<div class="container">
-	<div class="blog-header">
-	<% days = ["None", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] %>
-	<h2><%= @schedule.title %> (<%= days[@schedule.day] %>)</h2>
-	<h4 align="center">Requests with more than 8 events may fail.</h4>
-	</div>
-	<div class="row">
-		<!-- SCHEDULE VIEW -->
-		<div class="col-sm-6 blog-main">
-		<h4><u>Scheduled Events</u></h4>
-			<% if not @schedule_errors.nil? %>
-				<h4> ERRORS: </h4>
-				<ul>
-					<% @schedule_errors.each do |err| %>
-						<li><%= err %></li>
-					<% end %>
-				</ul>
-			<% end %>
+<!-- SECOND NAV BAR -->
+
+ <div class="center" style="height:100%">
+<div class="container" style="width:100%; padding-left:0px; padding-right:0px; height:100%">
+	
+
+		<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+	    <!-- MAPS VIEW -->
+	    <script>
+	      var directionsDisplay;
+	      var directionsService = new google.maps.DirectionsService();
+	      var map;
+
+	      function initialize() {
+	      	  directionsDisplay = new google.maps.DirectionsRenderer();
+
+			  var myLatlng = new google.maps.LatLng(37.8,-122.3);
+			  var mapOptions = {
+			    zoom: 10,
+			    center: myLatlng
+			  }
+
+			  var start;
+			  var end;
+			  var waypts = [];
+			  <% Schedule.find_events(@schedule_events).each_with_index do |e, index| %>
+				var newLat = new google.maps.LatLng(<%=e.latitude%>, <%=e.longitude%>);
+			    <% if index == 0 %>
+			    	start = newLat
+			    <% elsif index == @schedule.num_events - 1 %>
+			    	end = newLat
+			    <% else %>
+			    	waypts.push({
+			    		location:newLat,
+			    		stopover:true
+			    		});
+			    <% end %>
+
+			  <% end %>
+			  var travel = "DRIVING"  //document.getElementById('mode').value;
+			  var request = {
+	      		origin: start,
+	      		destination: end,
+	      		waypoints: waypts,
+	      		optimizeWaypoints: true,
+	      		travelMode: google.maps.TravelMode[travel]
+	  		};
+	  		   directionsService.route(request, function(response, status) {
+	    		if (status == google.maps.DirectionsStatus.OK) {
+	      			directionsDisplay.setDirections(response);
+	    		}
+	  		});
+
+			  map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+			  directionsDisplay.setMap(map);
+			  directionsDisplay.setPanel(document.getElementById('directions-panel'));
+
+			}
 			
-			<table class="table">
+		  	google.maps.event.addDomListener(window, 'load', initialize);
+		  	google.maps.event.addDomListener(window, "resize", function() {
+	 			var center = map.getCenter();
+	 			google.maps.event.trigger(map, "resize");
+	 			map.setCenter(center); 
+			});
+	    </script>
+	    <style>
+	      #map_canvas {
+	        width: 100%;
+	        position:relative;
+	        height: 100%;
+	      }
+
+	      .map-container {
+	      	height:100%;
+	      	margin:0px;
+	      	padding:0px;
+	      }
+	      
+
+	      #directions-panel {
+	        height: 100%;
+	        float: right;
+	        width: auto;
+	        overflow: auto;
+	      }
+
+	      #control {
+	        background: #fff;
+	        padding: 5px;
+	        font-size: 14px;
+	        font-family: Arial;
+	        border: 1px solid #ccc;
+	        box-shadow: 0 2px 2px rgba(33, 33, 33, 0.4);
+	        display: none;
+	      }
+
+	      @media print {
+	        #map-canvas {
+	          height: 500px;
+	          margin: 0;
+	        }
+	        #directions-panel {
+	          float: none;
+	          width: auto;
+	        }
+	      }
+   		</style>
+   		</style>
+   		<div id="map_canvas"></div>
+	   		<div id="panel" class="schedule-div col-xs-6">
+	    		<!-- <div style="width: 100%; height: 200px; background-color: #0000FF;">
+	    		</div> -->
+	    		
+	    		<h4><u>Scheduled Events</u></h4>
+						<% if not @schedule_errors.nil? %>
+							<h4> ERRORS: </h4>
+							<ul>
+								<% @schedule_errors.each do |err| %>
+									<li><%= err %></li>
+								<% end %>
+							</ul>
+						<% end %>
+							
+						<table class="table">
+							<thead>
+								<th>#</th>
+								<th>Event</th>
+								<th>Time</th>
+								<th>Location</th>
+								<th>Actions</th>
+							</thead>
+							<tbody>
+							<% edex = 64 %>
+							<% @schedule_events.each_with_index do |n, index| %>
+								<% node_start = n.start %>
+								<% node_end = n.endtime %>
+								<% node_type = n.type %>
+								
+								<% if node_type == 0 %>
+									<% e = n.event %>
+									<tr class="active">
+										<td class="view_event_list_text">
+										<% edex += 1 %>
+										<%= edex.chr %>
+										</td>
+										<td class="view_event_list_text" style="white-space: nowrap; overflow: hidden;">
+											<b><%= e.title.split.map(&:capitalize).join(' ') %></b>
+										</td>
+										<td class="view_event_list_text" style="white-space: nowrap; overflow: hidden;">
+											<%= (n.start-(n.start%100))/100 %>:<%if(n.start % 100)<10%>0<%end%><%= (n.start % 100) %>
+											<span class="glyphicon glyphicon-arrow-right"></span>
+											<%= (n.endtime-(n.endtime%100))/100 %>:<%if(n.endtime % 100)<10%>0<%end%><%= (n.endtime % 100) %><br>
+										</td>
+
+
+										<td class="view_event_list_text">
+											<%= e.address.split.map(&:capitalize).join(' ') %>
+										</td>
+										<td>
+											<div class="btn-group">
+											<%= form_tag("/users/delete_event_from_schedule", method: "post") do %>
+												<%= hidden_field_tag(:event_id, e.id) %>
+												<%= hidden_field_tag(:schedule_id, @schedule.id) %>
+												<%= submit_tag("Remove", :class => "btn btn-sm btn-danger") %>
+											<% end %>
+											</div>
+										</td>
+									</tr>
+								<% end %>
+								<% if node_type == 2 %>
+									<tr class="default">
+										<td class="view_event_list_text">
+											<!-- Empty because no number -->
+										</td>
+										<td class="view_event_list_text">
+											<!-- Empty because no number -->
+										</td>
+										<td class="view_event_list_text">
+											Travel:
+										</td>
+										<td class="view_event_list_text">
+											<% if (n.duration-(n.duration%100))/100 > 0 %><%= (n.duration-(n.duration%100))/100 %> hr, <% end %><%if(n.duration % 100)<10%>0<%end%><%= (n.duration % 100) %> minutes
+										</td>
+										<td class="view_event_list_text">
+											<!-- Empty because no number -->
+										</td>
+									</tr>
+								<% end %>
+
+
+								
+							<% end %>
+							</tbody>
+						</table>
+						<% if (@schedule_events.length == 1 and @schedule_events[0].type == 1) and (not @newest_schedule_event.nil?) %>
+							<div class="btn-group reset-button" align="center">
+							<h3>SCHEDULE CONFLICT</h3>
+							<%= form_tag("/users/delete_all_schedule_events", method: "post") do %>
+								<% hidden_field_tag(:event_id, @newest_schedule_event) #.id%>
+								<%= hidden_field_tag(:schedule_id, @schedule.id) %>
+								<%= submit_tag("Reset Schedule", :class => "btn btn-lg btn-danger") %>
+							<% end %>
+							</div>
+						<% end %>
+	    	</div>
+	    	<div id="panel" class="event-div col-xs-6">
+	    		<h4><u>Add New Event</u></h4>
+				<br>
+				<% if not @errors.nil? %>
+					<h4> ERRORS: </h4>
+					<ul>
+						<% @errors.each do |err| %>
+							<li><%= err %></li>
+						<% end %>
+					</ul>
+				<% end %>
+
+				<%= form_tag("/", method: "post") do %>
+					<% label_tag(:title, "Title:") %>
+					<%= text_field_tag(:title, nil,
+						placeholder: 'Event Name', :class => "input-field") %><br>
+					<% label_tag(:start_time, "Start Time: ") %>
+					<%= text_field_tag(:start_time, nil,
+						placeholder: 'Start Time (e.g. 1200)', :class => "input-field") %><br>
+					<% label_tag(:end_time, "End Time: ") %>
+					<%= text_field_tag(:end_time, nil,
+						placeholder: 'End Time (e.g. 1430)', :class => "input-field") %><br>
+					<% label_tag(:duration, "Duration: ") %>
+					<%= text_field_tag(:duration, nil, 
+						placeholder: 'Duration (e.g. 100)', :class => "input-field") %><br>
+					<%= text_field_tag(:address, nil,
+						placeholder: 'Address', :class => "input-field") %><br>
+					<%= label_tag(:saving, "Save Event") %>
+					<%= check_box_tag(:saving, true) %> <br>
+					<%= hidden_field_tag(:schedule_id, @schedule.id) %>
+					<%= submit_tag("Add Event", :onclick => "this.form.action = '/users/add_new_event_to_schedule'", :class => "btn btn-lg btn-primary btn-block") %>
+				<% end %>
+				<br>
+				<h4><u>Add Saved Event</u></h4>
+				<table class="table table-striped">
 				<thead>
-					<th>#</th>
 					<th>Event</th>
-					<th>Time</th>
+					<th>Range</th>
 					<th>Location</th>
 					<th>Actions</th>
+					<th></th>
 				</thead>
 				<tbody>
-				<% edex = 64 %>
-				<% @schedule_events.each_with_index do |n, index| %>
-					<% node_start = n.start %>
-					<% node_end = n.endtime %>
-					<% node_type = n.type %>
-					
-					<% if node_type == 0 %>
-						<% e = n.event %>
-						<tr class="active">
-							<td class="view_event_list_text">
-							<% edex += 1 %>
-							<%= edex.chr %>
-							</td>
-							<td class="view_event_list_text" style="white-space: nowrap; overflow: hidden;">
-								<b><%= e.title.split.map(&:capitalize).join(' ') %></b>
-							</td>
-							<td class="view_event_list_text" style="white-space: nowrap; overflow: hidden;">
-								<%= (n.start-(n.start%100))/100 %>:<%if(n.start % 100)<10%>0<%end%><%= (n.start % 100) %>
-								<span class="glyphicon glyphicon-arrow-right"></span>
-								<%= (n.endtime-(n.endtime%100))/100 %>:<%if(n.endtime % 100)<10%>0<%end%><%= (n.endtime % 100) %><br>
-							</td>
 
-
-							<td class="view_event_list_text">
-								<%= e.address.split.map(&:capitalize).join(' ') %>
-							</td>
-							<td>
-								<div class="btn-group">
-								<%= form_tag("/users/delete_event_from_schedule", method: "post") do %>
+				<% @user_events.each_with_index do |e, index| %>
+					<tr>
+						<td class="view_events_list_text">
+							<b style="white-space: nowrap; overflow: hidden;"><%= e.title.split.map(&:capitalize).join(' ') %></b><br>
+							<% if (e.duration-(e.duration%100))/100 > 0 %><%= (e.duration-(e.duration%100))/100 %> h, <% end %><%if(e.duration % 100)<10%>0<%end%><%= (e.duration % 100) %> m
+						</td>
+						<td class="view_events_list_text" style="white-space: nowrap; overflow: hidden;">
+							<%= (e.start_time-(e.start_time%100))/100 %>:<%if(e.start_time % 100)<10%>0<%end%><%= (e.start_time % 100) %>
+							<span class="glyphicon glyphicon-arrow-right"></span>
+							<%= (e.end_time-(e.end_time%100))/100 %>:<%if(e.end_time % 100)<10%>0<%end%><%= (e.end_time % 100) %><br>
+						</td>
+						<td class = "view_event_list_text">
+							<%= e.address.split.map(&:capitalize).join(' ') %><br>
+						</td>
+							
+						<td >
+							<div class="btn-group">
+								<%= form_tag("/users/add_old_event_to_schedule", method: "post") do %>
 									<%= hidden_field_tag(:event_id, e.id) %>
 									<%= hidden_field_tag(:schedule_id, @schedule.id) %>
-									<%= submit_tag("Remove", :class => "btn btn-sm btn-danger") %>
+									<%= submit_tag("Add", :class => "btn btn-sm btn-primary") %>
 								<% end %>
-								</div>
-							</td>
-						</tr>
-					<% end %>
-					<% if node_type == 2 %>
-						<tr class="default">
-							<td class="view_event_list_text">
-								<!-- Empty because no number -->
-							</td>
-							<td class="view_event_list_text">
-								<!-- Empty because no number -->
-							</td>
-							<td class="view_event_list_text">
-								Travel:
-							</td>
-							<td class="view_event_list_text">
-								<% if (n.duration-(n.duration%100))/100 > 0 %><%= (n.duration-(n.duration%100))/100 %> hr, <% end %><%if(n.duration % 100)<10%>0<%end%><%= (n.duration % 100) %> minutes
-							</td>
-							<td class="view_event_list_text">
-								<!-- Empty because no number -->
-							</td>
-						</tr>
-					<% end %>
+							</div>
+						</td>
+						
+						<td>
+							<div class="btn-group">
+								<%= form_tag("/users/delete_event", method: "post") do %>
+									<%= hidden_field_tag(:event_id, e.id) %>
+									<%= hidden_field_tag(:schedule_id, @schedule.id) %>
+									<%= submit_tag("DELETE", :class => "btn btn-sm btn-danger") %>
+								<% end %>
+							</div>
+						</td>
+					</tr>
 
-
-					
 				<% end %>
 				</tbody>
-			</table>
-			<% if (@schedule_events.length == 1 and @schedule_events[0].type == 1) and (not @newest_schedule_event.nil?) %>
-				<div class="btn-group reset-button" align="center">
-				<h3>SCHEDULE CONFLICT</h3>
-				<%= form_tag("/users/delete_all_schedule_events", method: "post") do %>
-					<% hidden_field_tag(:event_id, @newest_schedule_event) #.id%>
-					<%= hidden_field_tag(:schedule_id, @schedule.id) %>
-					<%= submit_tag("Reset Schedule", :class => "btn btn-lg btn-danger") %>
-				<% end %>
+				</table>
+				<br>
+				<h4><u>Schedule Directions</u></h4>
+				<div align="left" id="directions-panel"></div>
 				</div>
-			<% end %>
-			<br><br>
-
-
-  <head>
-    <style>
-      #map_canvas {
-        width: 100%;
-        height: 400px;
-      }
-
-      #panel {
-        position: absolute;
-        top: 225px;
-        left: 74%;
-        margin-left: -180px;
-      }
-
-    </style>
-    <style>
-      #directions-panel {
-        height: 100%;
-        float: right;
-        width: auto;
-        overflow: auto;
-      }
-
-      #control {
-        background: #fff;
-        padding: 5px;
-        font-size: 14px;
-        font-family: Arial;
-        border: 1px solid #ccc;
-        box-shadow: 0 2px 2px rgba(33, 33, 33, 0.4);
-        display: none;
-      }
-
-      @media print {
-        #map-canvas {
-          height: 500px;
-          margin: 0;
-        }
-        #directions-panel {
-          float: none;
-          width: auto;
-        }
-      }
-   		</style>
-      </style>
-
-
-
-    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
-    <script>
-      var directionsDisplay;
-      var directionsService = new google.maps.DirectionsService();
-      var map;
-
-      function initialize() {
-      	  directionsDisplay = new google.maps.DirectionsRenderer();
-
-		  var myLatlng = new google.maps.LatLng(37.8,-122.3);
-		  var mapOptions = {
-		    zoom: 10,
-		    center: myLatlng
-		  }
-
-		  var start;
-		  var end;
-		  var waypts = [];
-		  <% Schedule.find_events(@schedule_events).each_with_index do |e, index| %>
-			var newLat = new google.maps.LatLng(<%=e.latitude%>, <%=e.longitude%>);
-		    <% if index == 0 %>
-		    	start = newLat
-		    <% elsif index == @schedule.num_events - 1 %>
-		    	end = newLat
-		    <% else %>
-		    	waypts.push({
-		    		location:newLat,
-		    		stopover:true});
-		    <% end %>
-
-		  <% end %>
-		  var travel = "DRIVING"  //document.getElementById('mode').value;
-		  var request = {
-      		origin: start,
-      		destination: end,
-      		waypoints: waypts,
-      		optimizeWaypoints: true,
-      		travelMode: google.maps.TravelMode[travel]
-  		};
-  		   directionsService.route(request, function(response, status) {
-    		if (status == google.maps.DirectionsStatus.OK) {
-      			directionsDisplay.setDirections(response);
-    		}
-  		});
-
-		  map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
-		  directionsDisplay.setMap(map);
-		  directionsDisplay.setPanel(document.getElementById('directions-panel'));
-
-		}
-		
-	  	google.maps.event.addDomListener(window, 'load', initialize);
-	  	google.maps.event.addDomListener(window, "resize", function() {
- 			var center = map.getCenter();
- 			google.maps.event.trigger(map, "resize");
- 			map.setCenter(center); 
-		});
-
-    </script>
-
-
-
-  </head>
-  <body>
-    <div id="map_canvas"></div>
-    <div id="panel">
-
-    </div>
-    <br><br><br><br>
-  </body>
-
-
-
-		</div>
-		<!-- SIDEBAR VIEW -->
-		<div class="col-sm-6 col-sm-offset-0 ">
-		<!-- class="col-sm-5 col-sm-offset-1 -->
-			<h4><u>Add New Event</u></h4>
-			<br>
-			<% if not @errors.nil? %>
-				<h4> ERRORS: </h4>
-				<ul>
-					<% @errors.each do |err| %>
-						<li><%= err %></li>
-					<% end %>
-				</ul>
-			<% end %>
-
-			<%= form_tag("/", method: "post") do %>
-				<% label_tag(:title, "Title:") %>
-				<%= text_field_tag(:title, nil,
-					placeholder: 'Event Name', :class => "input-field") %><br>
-				<% label_tag(:start_time, "Start Time: ") %>
-				<%= text_field_tag(:start_time, nil,
-					placeholder: 'Start Time (e.g. 1200)', :class => "input-field") %><br>
-				<% label_tag(:end_time, "End Time: ") %>
-				<%= text_field_tag(:end_time, nil,
-					placeholder: 'End Time (e.g. 1430)', :class => "input-field") %><br>
-				<% label_tag(:duration, "Duration: ") %>
-				<%= text_field_tag(:duration, nil, 
-					placeholder: 'Duration (e.g. 100)', :class => "input-field") %><br>
-				<%= text_field_tag(:address, nil,
-					placeholder: 'Address', :class => "input-field") %><br>
-				<%= label_tag(:saving, "Save Event") %>
-				<%= check_box_tag(:saving, true) %> <br>
-				<%= hidden_field_tag(:schedule_id, @schedule.id) %>
-				<%= submit_tag("Add Event", :onclick => "this.form.action = '/users/add_new_event_to_schedule'", :class => "btn btn-lg btn-primary btn-block") %>
-			<% end %>
-			<br>
-			<h4><u>Add Saved Event</u></h4>
-			<table class="table table-striped">
-			<thead>
-				<th>Event</th>
-				<th>Range</th>
-				<th>Location</th>
-				<th>Actions</th>
-				<th></th>
-			</thead>
-			<tbody>
-
-			<% @user_events.each_with_index do |e, index| %>
-				<tr>
-					<td class="view_events_list_text">
-						<b style="white-space: nowrap; overflow: hidden;"><%= e.title.split.map(&:capitalize).join(' ') %></b><br>
-						<% if (e.duration-(e.duration%100))/100 > 0 %><%= (e.duration-(e.duration%100))/100 %> h, <% end %><%if(e.duration % 100)<10%>0<%end%><%= (e.duration % 100) %> m
-					</td>
-					<td class="view_events_list_text" style="white-space: nowrap; overflow: hidden;">
-						<%= (e.start_time-(e.start_time%100))/100 %>:<%if(e.start_time % 100)<10%>0<%end%><%= (e.start_time % 100) %>
-						<span class="glyphicon glyphicon-arrow-right"></span>
-						<%= (e.end_time-(e.end_time%100))/100 %>:<%if(e.end_time % 100)<10%>0<%end%><%= (e.end_time % 100) %><br>
-					</td>
-					<td class = "view_event_list_text">
-						<%= e.address.split.map(&:capitalize).join(' ') %><br>
-					</td>
-						
-					<td >
-						<div class="btn-group">
-							<%= form_tag("/users/add_old_event_to_schedule", method: "post") do %>
-								<%= hidden_field_tag(:event_id, e.id) %>
-								<%= hidden_field_tag(:schedule_id, @schedule.id) %>
-								<%= submit_tag("Add", :class => "btn btn-sm btn-primary") %>
-							<% end %>
-						</div>
-					</td>
-					
-					<td>
-						<div class="btn-group">
-							<%= form_tag("/users/delete_event", method: "post") do %>
-								<%= hidden_field_tag(:event_id, e.id) %>
-								<%= hidden_field_tag(:schedule_id, @schedule.id) %>
-								<%= submit_tag("DELETE", :class => "btn btn-sm btn-danger") %>
-							<% end %>
-						</div>
-					</td>
-				</tr>
-
-			<% end %>
-			</tbody>
-			</table>
-			<br>
-			<h4><u>Schedule Directions</u></h4>
-			<div align="left" id="directions-panel"></div>
-			</div>
+	    	</div>
+    	</div>
 	</div>
-
 </div>
