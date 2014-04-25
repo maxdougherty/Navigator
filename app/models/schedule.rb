@@ -223,6 +223,10 @@ class Schedule < ActiveRecord::Base
      		return false
      	end
 
+        if time_minus_duration(event.end_time,event.start_time) < event.duration
+            return false
+        end
+
      	#Then the Node after the last event in the itin must be contain Freespace
 
         free = lastevent(itinerary) + 1
@@ -238,7 +242,7 @@ class Schedule < ActiveRecord::Base
         travel = travel_time(itinerary[free-1].event, event)
 
         if event.start_time >= time_plus_duration(itinerary[free].start,travel)
-            if time_plus_duration(event.start_time,event.duration)<=itinerary[free].end_time
+            if time_plus_duration(event.start_time,event.duration)<=itinerary[free].endtime
                 return event.start_time
             end
         end
