@@ -127,6 +127,10 @@ textarea {
 	text-align: center;
 }
 
+.add_old_event_button {
+	width:100%;
+}
+
 /* Map and Direction Styles */
 .adp-directions {
 	width: 100%;
@@ -155,6 +159,10 @@ textarea {
 	max-width:550px;
 	background-color:#FFFFFF;
 	min-width:400px;
+	max-height: -moz-calc(100% - 50px);
+  	max-height: -webkit-calc(100% - 50px);
+  	max-height: calc(100% - 50px);
+	overflow:scroll;
 }
 
 .event_form_button {
