@@ -15,62 +15,107 @@
 		<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=true"></script>
 	    <!-- MAPS VIEW -->
 	    <script>
-	      var directionsDisplay;
-	      var directionsService = new google.maps.DirectionsService();
-	      var map;
+	    var directionsDisplay;
+	    var directionsService = new google.maps.DirectionsService();
+	    var map;
+	    var bigCount
 
-	      function initialize() {
-	      	  directionsDisplay = new google.maps.DirectionsRenderer();
+	    function initialize() {
+	    	var count = 0
 
-			  var myLatlng = new google.maps.LatLng(37.8,-122.3);
-			  var mapOptions = {
-			    zoom: 10,
-			    center: myLatlng
-			  }
+			<% Schedule.find_events(@schedule_events).each_with_index do |e, index| %>
+				count = count + 1
+				bigCount = count
+			<% end %>
 
-			  var start;
-			  var end;
-			  var waypts = [];
-			  <% Schedule.find_events(@schedule_events).each_with_index do |e, index| %>
-				var newLat = new google.maps.LatLng(<%=e.latitude%>, <%=e.longitude%>);
-			    <% if index == 0 %>
-			    	start = newLat
-			    <% elsif index == @schedule.num_events - 1 %>
-			    	end = newLat
-			    <% else %>
-			    	waypts.push({
-			    		location:newLat,
-			    		stopover:true
-			    		});
-			    <% end %>
 
-			  <% end %>
-			  var travel = "DRIVING"  //document.getElementById('mode').value;
-			  var request = {
-	      		origin: start,
-	      		destination: end,
-	      		waypoints: waypts,
-	      		optimizeWaypoints: true,
-	      		travelMode: google.maps.TravelMode[travel]
-	  		};
-	  		   directionsService.route(request, function(response, status) {
-	    		if (status == google.maps.DirectionsStatus.OK) {
-	      			directionsDisplay.setDirections(response);
-	    		}
-	  		});
+			if (count < 2) {
+				var myLatlng = new google.maps.LatLng(37.8,-122);
+				<% Schedule.find_events(@schedule_events).each_with_index do |e, index| %>
+					myLatlng = new google.maps.LatLng(<%=e.latitude%>, <%=e.longitude%>);
+				<% end %>
 
-			  map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
-			  directionsDisplay.setMap(map);
-			  directionsDisplay.setPanel(document.getElementById('directions-panel'));
+				var map_canvas = document.getElementById('map_canvas')
+				var mapOptions = {
+			    	zoom: 13,
+			    	center: myLatlng,
+			    	panControl: false,
+				    zoomControlOptions: {
+				        position: google.maps.ControlPosition.LEFT_BOTTOM,
+				        style: google.maps.ZoomControlStyle.SMALL
 
+				    },
+				}
+				var map = new google.maps.Map(map_canvas, mapOptions);
+				<% Schedule.find_events(@schedule_events).each_with_index do |e, index| %>
+					var newLat = new google.maps.LatLng(<%=e.latitude%>, <%=e.longitude%>);
+				    var marker = new google.maps.Marker({
+					    position: newLat,
+					    map: map,
+					});
+				<% end %>
+
+			} else {
+		      	directionsDisplay = new google.maps.DirectionsRenderer();
+				var myLatlng = new google.maps.LatLng(37.8,-122.3);
+				var mapOptions = {
+					zoom: 10,
+				    center: myLatlng,
+				    panControl: false,
+				    zoomControlOptions: {
+				        position: google.maps.ControlPosition.LEFT_BOTTOM,
+				        style: google.maps.ZoomControlStyle.SMALL
+
+				    },
+				}
+
+				var start;
+				var end;
+				var waypts = [];
+				<% Schedule.find_events(@schedule_events).each_with_index do |e, index| %>
+					var newLat = new google.maps.LatLng(<%=e.latitude%>, <%=e.longitude%>);
+				    <% if index == 0 %>
+				    	start = newLat
+				    <% elsif index == @schedule.num_events - 1 %>
+				    	end = newLat
+				    <% else %>
+				    	waypts.push({
+				    		location:newLat,
+				    		stopover:true
+				    		});
+				    <% end %>
+				  <% end %>
+
+				  var travel = "DRIVING"  //document.getElementById('mode').value;
+				  var request = {
+		      		origin: start,
+		      		destination: end,
+		      		waypoints: waypts,
+		      		optimizeWaypoints: true,
+		      		travelMode: google.maps.TravelMode[travel]
+		  		};
+		  		directionsService.route(request, function(response, status) {
+		    		if (status == google.maps.DirectionsStatus.OK) {
+		      			directionsDisplay.setDirections(response);
+		    		}
+		  		});
+
+				  map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+				  directionsDisplay.setMap(map);
+				  directionsDisplay.setPanel(document.getElementById('directions-panel'));
+				}
 			}
-			
-		  	google.maps.event.addDomListener(window, 'load', initialize);
-		  	google.maps.event.addDomListener(window, "resize", function() {
-	 			var center = map.getCenter();
-	 			google.maps.event.trigger(map, "resize");
-	 			map.setCenter(center); 
-			});
+
+			if (bigCount < 2) {
+				google.maps.event.addDomListener(window, 'load', initialize);
+			} else {
+			  	google.maps.event.addDomListener(window, 'load', initialize);
+			  	google.maps.event.addDomListener(window, "resize", function() {
+		 			var center = map.getCenter();
+		 			google.maps.event.trigger(map, "resize");
+		 			map.setCenter(center); 
+				});
+		}
 	    </script>
 
 
