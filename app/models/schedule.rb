@@ -29,7 +29,7 @@ class Schedule < ActiveRecord::Base
     # Returns time in 24-hour format
     # If travel time is greater than 24-hours, return 2359 as travel time
     @travel_memo = {}
-    def self.travel_time(origin, destination)
+    def self.travel_time(origin, destination, iterations=2)
         if @travel_memo.key?([origin.id, destination.id])
             return @travel_memo[[origin.id, destination.id]]
         end
@@ -48,6 +48,9 @@ class Schedule < ActiveRecord::Base
         transit_info = JSON.parse(transit_JSON)
 
         transit_time = transit_info["routes"]
+        if iterations < 1
+            return 2359
+        end
         if transit_time.empty?
             # wait statement
             # Recursive call
@@ -55,7 +58,8 @@ class Schedule < ActiveRecord::Base
             puts "origin: " + origin.title + " " + origin.to_s
             puts "destination: " + destination.title + " " + destination.to_s
             sleep(1)
-            transit_time = travel_time(origin, destination)
+            transit_time = travel_time(origin, destination, iterations - 1)
+            @travel_memo[[origin.id, destination.id]] = transit_time
             return transit_time
         end
         transit_time = transit_time.first["legs"].first["duration"]["text"].split(" ")
