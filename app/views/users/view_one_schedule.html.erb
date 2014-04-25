@@ -1,11 +1,18 @@
 <%= stylesheet_link_tag "Navigator.css" %>
 <!-- SECOND NAV BAR -->
 
- <div class="center" style="height:100%">
+<!-- Add JQuery -->
+<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+<script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+  		
+
+
+
+<div class="center">
 <div class="container" style="width:100%; padding-left:0px; padding-right:0px; height:100%">
 	
 
-		<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+		<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=true"></script>
 	    <!-- MAPS VIEW -->
 	    <script>
 	      var directionsDisplay;
@@ -65,18 +72,15 @@
 	 			map.setCenter(center); 
 			});
 	    </script>
+
+
 	    <style>
 	      #map_canvas {
-	        width: 100%;
+	      	width:100%;
 	        position:relative;
 	        height: 100%;
 	      }
 
-	      .map-container {
-	      	height:100%;
-	      	margin:0px;
-	      	padding:0px;
-	      }
 	      
 
 	      #directions-panel {
@@ -109,11 +113,27 @@
    		</style>
    		</style>
    		<div id="map_canvas"></div>
-	   		<div id="panel" class="schedule-div col-xs-6">
+	   		<div id="panel" class="schedule-div">
 	    		<!-- <div style="width: 100%; height: 200px; background-color: #0000FF;">
 	    		</div> -->
-	    		
-	    		<h4><u>Scheduled Events</u></h4>
+
+	    		<div class="event_form_button" id="view_schedule_button">
+	    			<p class="event_form_button_text" id="view_schedule_button_text">
+	    				— Hide Schedule
+    				</p>
+	    		</div>
+	    		<script>
+					$( "#view_schedule_button" ).click(function() {
+					  $( "#schedule_list" ).toggle( "blind" );
+					  var outstr = $("#view_schedule_button_text").html();
+					  if ($.trim(outstr) == "— Hide Schedule") {
+					  	$("#view_schedule_button_text").html("+ Show Schedule");
+					  } else {
+					  	$("#view_schedule_button_text").html("— Hide Schedule");
+					  }
+					});
+				</script>
+					<div id="schedule_list">
 						<% if not @schedule_errors.nil? %>
 							<h4> ERRORS: </h4>
 							<ul>
@@ -204,50 +224,103 @@
 							<% end %>
 							</div>
 						<% end %>
+					</div>
+				<div class="event_form_button" id="toggle-directions-button">
+				<!-- Realized that this should not be a class -->
+	    			<p class="event_form_button_text" id="toggle-directions-button-text">
+	    				+ Show Directions
+					</p>
+	    		</div>
+	    		<script>
+					$( "#toggle-directions-button" ).click(function() {
+					  $( "#directions-panel" ).toggle( "blind" );
+					  var outstr = $("#toggle-directions-button-text").html();
+					  if ($.trim(outstr) == "+ Show Directions") {
+					  	$("#toggle-directions-button-text").html("— Hide Directions");
+					  } else {
+					  	$("#toggle-directions-button-text").html("+ Show Directions");
+					  }
+					  
+					});
+				</script>
+				<div align="left" id="directions-panel" style="display:none;"></div>
+				</div>
 	    	</div>
-	    	<div id="panel" class="event-div col-xs-6">
-	    		<h4><u>Add New Event</u></h4>
-				<br>
-				<% if not @errors.nil? %>
-					<h4> ERRORS: </h4>
-					<ul>
-						<% @errors.each do |err| %>
-							<li><%= err %></li>
-						<% end %>
-					</ul>
-				<% end %>
+	    	<div id="panel" class="event-div">
+	    		<div class="event_form_button" id="add_new_event_button">
+	    			<p class="event_form_button_text" id="add_new_event_button_text">
+	    				+ Add New Event
+    				</p>
+	    		</div>
+	    		<script>
+					$( "#add_new_event_button" ).click(function() {
+					  $( "#event_form" ).toggle( "blind" );
+					  var outstr = $("#add_new_event_button_text").html();
+					  if ($.trim(outstr) == "+ Add New Event") {
+					  	$("#add_new_event_button_text").html("— Add New Event");
+					  } else {
+					  	$("#add_new_event_button_text").html("+ Add New Event");
+					  }
+					});
+				</script>
+	    		<div id="event_form" style="display:none;">
+					<% if not @errors.nil? %>
+						<h4> ERRORS: </h4>
+						<ul>
+							<% @errors.each do |err| %>
+								<li><%= err %></li>
+							<% end %>
+						</ul>
+					<% end %>
 
-				<%= form_tag("/", method: "post") do %>
-					<% label_tag(:title, "Title:") %>
-					<%= text_field_tag(:title, nil,
-						placeholder: 'Event Name', :class => "input-field") %><br>
-					<% label_tag(:start_time, "Start Time: ") %>
-					<%= text_field_tag(:start_time, nil,
-						placeholder: 'Start Time (e.g. 1200)', :class => "input-field") %><br>
-					<% label_tag(:end_time, "End Time: ") %>
-					<%= text_field_tag(:end_time, nil,
-						placeholder: 'End Time (e.g. 1430)', :class => "input-field") %><br>
-					<% label_tag(:duration, "Duration: ") %>
-					<%= text_field_tag(:duration, nil, 
-						placeholder: 'Duration (e.g. 100)', :class => "input-field") %><br>
-					<%= text_field_tag(:address, nil,
-						placeholder: 'Address', :class => "input-field") %><br>
-					<%= label_tag(:saving, "Save Event") %>
-					<%= check_box_tag(:saving, true) %> <br>
-					<%= hidden_field_tag(:schedule_id, @schedule.id) %>
-					<%= submit_tag("Add Event", :onclick => "this.form.action = '/users/add_new_event_to_schedule'", :class => "btn btn-lg btn-primary btn-block") %>
-				<% end %>
-				<br>
-				<h4><u>Add Saved Event</u></h4>
-				<table class="table table-striped">
-				<thead>
-					<th>Event</th>
-					<th>Range</th>
-					<th>Location</th>
-					<th>Actions</th>
-					<th></th>
-				</thead>
-				<tbody>
+					<%= form_tag("/", method: "post") do %>
+						<% label_tag(:title, "Title:") %>
+						<%= text_field_tag(:title, nil,
+							placeholder: 'Event Name', :class => "input-field") %><br>
+						<% label_tag(:start_time, "Start Time: ") %>
+						<%= text_field_tag(:start_time, nil,
+							placeholder: 'Start Time (e.g. 1200)', :class => "input-field") %><br>
+						<% label_tag(:end_time, "End Time: ") %>
+						<%= text_field_tag(:end_time, nil,
+							placeholder: 'End Time (e.g. 1430)', :class => "input-field") %><br>
+						<% label_tag(:duration, "Duration: ") %>
+						<%= text_field_tag(:duration, nil, 
+							placeholder: 'Duration (e.g. 100)', :class => "input-field") %><br>
+						<%= text_field_tag(:address, nil,
+							placeholder: 'Address', :class => "input-field") %><br>
+						<%= label_tag(:saving, "Save Event") %>
+						<%= check_box_tag(:saving, true) %> <br>
+						<%= hidden_field_tag(:schedule_id, @schedule.id) %>
+						<%= submit_tag("Add Event", :onclick => "this.form.action = '/users/add_new_event_to_schedule'", :class => "btn btn-lg btn-primary btn-block") %>
+					<% end %>
+					<br>
+				</div>
+				<div class="event_form_button" id="add_saved_event_button">
+	    			<p class="event_form_button_text" id="add_saved_event_button_text">
+	    				+ Add Saved Event
+    				</p>
+	    		</div>
+	    		<script>
+					$( "#add_saved_event_button" ).click(function() {
+						$( "#saved_event_list" ).toggle( "blind" );
+						var outstr = $("#add_saved_event_button_text").html();
+						if ($.trim(outstr) == "+ Add Saved Event") {
+							$("#add_saved_event_button_text").html("— Add Saved Event");
+						} else {
+							$("#add_saved_event_button_text").html("+ Add Saved Event");
+						}
+					});
+				</script>
+				<div id="saved_event_list" style="display:none;">
+					<table class="table table-striped">
+					<thead>
+						<th>Event</th>
+						<th>Range</th>
+						<th>Location</th>
+						<th>Actions</th>
+						<th></th>
+					</thead>
+					<tbody>
 
 				<% @user_events.each_with_index do |e, index| %>
 					<tr>
@@ -271,11 +344,6 @@
 									<%= hidden_field_tag(:schedule_id, @schedule.id) %>
 									<%= submit_tag("Add", :class => "btn btn-sm btn-primary") %>
 								<% end %>
-							</div>
-						</td>
-						
-						<td>
-							<div class="btn-group">
 								<%= form_tag("/users/delete_event", method: "post") do %>
 									<%= hidden_field_tag(:event_id, e.id) %>
 									<%= hidden_field_tag(:schedule_id, @schedule.id) %>
@@ -289,9 +357,8 @@
 				</tbody>
 				</table>
 				<br>
-				<h4><u>Schedule Directions</u></h4>
-				<div align="left" id="directions-panel"></div>
 				</div>
+				
 	    	</div>
     	</div>
 	</div>
