@@ -29,7 +29,7 @@ class Schedule < ActiveRecord::Base
     # Returns time in 24-hour format
     # If travel time is greater than 24-hours, return 2359 as travel time
     @travel_memo = {}
-    def self.travel_time(origin, destination)
+    def self.travel_time(origin, destination, iterations=2)
         if @travel_memo.key?([origin.id, destination.id])
             return @travel_memo[[origin.id, destination.id]]
         end
@@ -48,6 +48,9 @@ class Schedule < ActiveRecord::Base
         transit_info = JSON.parse(transit_JSON)
 
         transit_time = transit_info["routes"]
+        if iterations < 1
+            return 2359
+        end
         if transit_time.empty?
             # wait statement
             # Recursive call
@@ -55,7 +58,8 @@ class Schedule < ActiveRecord::Base
             puts "origin: " + origin.title + " " + origin.to_s
             puts "destination: " + destination.title + " " + destination.to_s
             sleep(1)
-            transit_time = travel_time(origin, destination)
+            transit_time = travel_time(origin, destination, iterations - 1)
+            @travel_memo[[origin.id, destination.id]] = transit_time
             return transit_time
         end
         transit_time = transit_time.first["legs"].first["duration"]["text"].split(" ")
@@ -219,6 +223,10 @@ class Schedule < ActiveRecord::Base
      		return false
      	end
 
+        if time_minus_duration(event.end_time,event.start_time) < event.duration
+            return false
+        end
+
      	#Then the Node after the last event in the itin must be contain Freespace
 
         free = lastevent(itinerary) + 1
@@ -234,9 +242,9 @@ class Schedule < ActiveRecord::Base
         travel = travel_time(itinerary[free-1].event, event)
 
         if event.start_time >= time_plus_duration(itinerary[free].start,travel)
-
-        # if event.start_time >= itinerary[free].start + travel
-            return event.start_time
+            if time_plus_duration(event.start_time,event.duration)<=itinerary[free].endtime
+                return event.start_time
+            end
         end
 
 
