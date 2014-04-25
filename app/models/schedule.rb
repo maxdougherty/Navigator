@@ -30,6 +30,12 @@ class Schedule < ActiveRecord::Base
     # If travel time is greater than 24-hours, return 2359 as travel time
     @travel_memo = {}
     def self.travel_time(origin, destination)
+        if @travel_memo.key?([origin.id, destination.id])
+            return @travel_memo[[origin.id, destination.id]]
+        end
+        if @travel_memo.key?([destination.id,origin.id])
+            return @travel_memo[[destination.id,origin.id]]
+        end
         url = "http://maps.googleapis.com/maps/api/directions/json?"
         # Add origin
         url += "origin=" + origin.latitude.to_s + "," + origin.longitude.to_s
@@ -58,11 +64,17 @@ class Schedule < ActiveRecord::Base
             if (transit_time[1] = "days")
                 return 2359
             else
+                @travel_memo[[origin.id, destination.id]] = transit_time[0].to_i * 100 + transit_time[2].to_i
                 return transit_time[0].to_i * 100 + transit_time[2].to_i
             end
         else
+            @travel_memo[[origin.id, destination.id]] = transit_time[0].to_i
             return transit_time[0].to_i
         end
+    end
+
+    def self.travel_memo
+        return @travel_memo
     end
 
 
@@ -113,6 +125,7 @@ class Schedule < ActiveRecord::Base
 
     # TODO: Add constraints
     @schedule_memo = {}
+
     def self.schedule_events(itin, e, rem_events, opt_flag)
         # Sanitize inputs
         # puts "CALLING FUNCTION"
@@ -228,7 +241,9 @@ class Schedule < ActiveRecord::Base
 
 
         if time_minus_duration(event.end_time,event.duration) >= time_plus_duration(itinerary[free].start , travel)
-            return itinerary[free].start+travel
+            if time_plus_duration(time_plus_duration(itinerary[free].start,travel), event.duration) <= itinerary[free].endtime
+                return time_plus_duration(itinerary[free].start, travel)
+            end
         end
         #No space :,(
         return false
