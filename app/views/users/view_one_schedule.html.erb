@@ -273,6 +273,7 @@
 								<%= hidden_field_tag(:schedule_id, @schedule.id) %>
 								<%= submit_tag("Reset Schedule", :class => "btn btn-lg btn-danger") %>
 							<% end %>
+							<br>
 							</div>
 						<% end %>
 					</div>
@@ -390,7 +391,7 @@
 							
 						<td >
 							<div class="btn-group">
-								<%= form_tag("/users/add_old_event_to_schedule  add_old_event_button", method: "post") do %>
+								<%= form_tag("/users/add_old_event_to_schedule", method: "post") do %>
 									<%= hidden_field_tag(:event_id, e.id) %>
 									<%= hidden_field_tag(:schedule_id, @schedule.id) %>
 									<%= submit_tag("ADD", :class => "btn btn-sm btn-primary add_old_event_button") %>
