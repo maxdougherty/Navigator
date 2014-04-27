@@ -29,7 +29,7 @@ class Schedule < ActiveRecord::Base
     # Returns time in 24-hour format
     # If travel time is greater than 24-hours, return 2359 as travel time
     @travel_memo = {}
-    def self.travel_time(origin, destination)
+    def self.travel_time(origin, destination, iterations=2)
         if @travel_memo.key?([origin.id, destination.id])
             return @travel_memo[[origin.id, destination.id]]
         end
@@ -41,13 +41,16 @@ class Schedule < ActiveRecord::Base
         url += "origin=" + origin.latitude.to_s + "," + origin.longitude.to_s
         # Add destination
         url += "&destination=" + destination.latitude.to_s + "," + destination.longitude.to_s
-        # Add additional params [ALWAYS WALKING]
+        # Add additional params [ALWAYS DRIVING]
         # TODO: Add ability to indicate travel type
-        url += "&sensor=false" + "&mode=walking"
+        url += "&sensor=false" + "&mode=driving"
         transit_JSON = open(url)
         transit_info = JSON.parse(transit_JSON)
 
         transit_time = transit_info["routes"]
+        if iterations < 1
+            return 2359
+        end
         if transit_time.empty?
             # wait statement
             # Recursive call
@@ -55,7 +58,8 @@ class Schedule < ActiveRecord::Base
             puts "origin: " + origin.title + " " + origin.to_s
             puts "destination: " + destination.title + " " + destination.to_s
             sleep(1)
-            transit_time = travel_time(origin, destination)
+            transit_time = travel_time(origin, destination, iterations - 1)
+            @travel_memo[[origin.id, destination.id]] = transit_time
             return transit_time
         end
         transit_time = transit_time.first["legs"].first["duration"]["text"].split(" ")
@@ -219,6 +223,10 @@ class Schedule < ActiveRecord::Base
      		return false
      	end
 
+        if time_minus_duration(event.end_time,event.start_time) < event.duration
+            return false
+        end
+
      	#Then the Node after the last event in the itin must be contain Freespace
 
         free = lastevent(itinerary) + 1
@@ -234,14 +242,22 @@ class Schedule < ActiveRecord::Base
         travel = travel_time(itinerary[free-1].event, event)
 
         if event.start_time >= time_plus_duration(itinerary[free].start,travel)
-
-        # if event.start_time >= itinerary[free].start + travel
-            return event.start_time
+            if time_plus_duration(event.start_time,event.duration)<=itinerary[free].endtime
+                if time_plus_duration(itinerary[free].start, travel) <= itinerary[free].start
+                    return false
+                end
+                return event.start_time
+            end
         end
 
 
         if time_minus_duration(event.end_time,event.duration) >= time_plus_duration(itinerary[free].start , travel)
-            return itinerary[free].start+travel
+            if time_plus_duration(time_plus_duration(itinerary[free].start,travel), event.duration) <= itinerary[free].endtime
+                if time_plus_duration(itinerary[free].start,travel) <= itinerary[free].start
+                    return false
+                end
+                return time_plus_duration(itinerary[free].start, travel)
+            end
         end
         #No space :,(
         return false
@@ -493,62 +509,5 @@ class Schedule < ActiveRecord::Base
         return Event.create(title: title, start_time: start_time, 
             end_time: end_time, duration: duration, address: address)
     end
-    # TESTING REGION
 
-	def self.testAdd
-		#Create initial freetime node from 8am to 12pm
-		firstNode = Node.new(800, 2400, 1600, 1, nil)
-		e = Event.create(title:"Event1",address:"Soda Hall", start_time:800, end_time:1200, duration:100)
-		itin = [firstNode]
-
-		newItin = sits(itin, e, 800)
-		# Node 0 is even ending at 9
-		g1 = newItin[0].type == 0 && newItin[0].endtime == 900
-
-
-		e1 = Event.create(title:"Event2",address:"Sproul Plaza, Berkeley, CA", start_time:1000, end_time:1200, duration:200)
-		newItin = sits(newItin, e1, 1000)
-		# Node 1 is freetime
-		f2 = newItin[1].type == 1 
-		# Node 2 is type travel
-		f3 = newItin[2].type == 2
-		# Duration of travel-time
-		s3 = newItin[1].duration
-		# Node 3 is event ending at 1200
-		f4 = newItin[3].type == 0 && newItin[3].endtime == 1200
-		# Node 4 is free time and lasts 12 hours
-		f5 = newItin[4].type == 1 && newItin[4].duration ==1200
-
-		e2 = Event.create(title:"Event3",address:"Delaware St, Berkeley, CA", start_time:2200, end_time:2230, duration:30)
-		newItin = sits(newItin, e2, 2200)
-		# Node 5 is freetime
-		h2 = newItin[4].type == 1 
-		# Node 5 is type travel
-		h3 = newItin[5].type == 2
-		# Node 6 is event ending at 1200
-		h4 = newItin[6].type == 0 && newItin[6].endtime == 2230
-		# Node 7 is free time and lasts 12 hours
-		h5 = newItin[7].type == 1 && newItin[7].start == 2230
-
-		return e1 && f2 && f3 && f4 && f5 && h2 && h3 && h4 && h5
-
-	end
-
-    def self.testFits
-        firstNode = Node.new(800, 2400, 1600, 1, nil)
-        
-        e = Event.create(title:"Event1",address:"Soda Hall", start_time:800, end_time:1200, duration:100)
-        itin = [firstNode]
-        return fits(itin, e)
-    end
-
-    def self.testFits2
-        firstNode = Node.new(800, 2400, 1600, 1, nil)
-        e = new_event("Event1", 800, 900, 1500, "Soda Hall")
-        itin = [firstNode]
-        sits(itin,e,fits(itin,e))
-        e1 = Event.create(title:"Event2",address:"2699 Derby Street, Berkeley, CA", start_time:800, end_time:900, duration:30)
-        h = fits(itin,e1)
-        return h
-    end
 end

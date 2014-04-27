@@ -1,6 +1,9 @@
 require 'spec_helper'
 
 describe Schedule do
+
+
+
 	it "adds event to schedule" do
 		firstNode = Schedule.new_node(800, 2400, 1600, 1, nil)
 		itin = [firstNode]
@@ -109,7 +112,96 @@ describe Schedule do
   		INFINITY = Float::INFINITY
   		expect(a[1]).to eq(INFINITY)
   	end
+    
+    it "confirm schedule groups events that are nearby" do
+      firstNode = Schedule.new_node(800,2400,1600,1,nil)
+      itin1 = [firstNode]
+      e2 = Schedule.new_event("eat",800,900,100,"Soda Hall")
+      e3 = Schedule.new_event("work",1000,2000,100,"Delaware St, Berkeley")
+      e4 = Schedule.new_event("code",1000,2000,100,"Soda Hall")
+      rem_events = []
+      rem_events.push(e3)
+      rem_events.push(e4)
+      a = Schedule.schedule_events(itin1,e2,rem_events,2)
+      expect(a[0][0].event.title == "eat")
+      expect(a[0][3].event.title == "code")
+      expect(a[0][5].event.title == "work")
+    end
 
+    it "properly handles events that are too far away" do
+      firstNode = Schedule.new_node(800,2400,1600,1,nil)
+      itin1 = [firstNode]
+      e2 = Schedule.new_event("eat",800,900,100,"Sacramento, California")
+      e3 = Schedule.new_event("work",1000,2000,900,"New York, New York")
+      rem_events = []
+      rem_events.push(e3)
+      a = Schedule.schedule_events(itin1,e2,rem_events,2)
+      expect(a[1]).to eq(Float::INFINITY)
+    end
+
+    it "schedules too many events" do
+      firstNode = Schedule.new_node(800,2400,1600,1,nil)
+      itin1 = [firstNode]
+      e = Schedule.new_event("sleep",800,1000,100,"2200 Durant")
+      e2 = Schedule.new_event("eat",900,1100,100,"2200 Durant")
+      e3 = Schedule.new_event("work",1000,1200,100,"1515 Delaware, Berkeley")
+      e4 = Schedule.new_event("code",1100,1300,100,"2226 Durant")
+      e5 = Schedule.new_event("watchtv",1200,1500,300,"1527 Hearst, Berkeley")
+      e6 = Schedule.new_event("gym",1500,1900,300,"2360 Ellsworth, Berkeley")
+      e7 = Schedule.new_event("sleepagain",1900,2400,500,"2360 Ellsworth, Berkeley")
+      e8 = Schedule.new_event("willnotfit",1900,2100,100,"2360 Ellsworth, Berkeley")
+      rem_events = []
+      rem_events.push(e2)
+      rem_events.push(e3)
+      rem_events.push(e4)
+      rem_events.push(e5)
+      rem_events.push(e6)
+      rem_events.push(e7)
+      rem_events.push(e8)
+      a = Schedule.schedule_events(itin1,e,rem_events,2)
+      INFINITY = Float::INFINITY
+      expect(a[1]).to eq(INFINITY)
+    end
+
+
+    it "test add functionality" do
+    #Create initial freetime node from 8am to 12pm
+      firstNode = Schedule.new_node(800, 2400, 1600, 1, nil)
+      e = Schedule.new_event("Event1", 800, 1200, 100, "Soda Hall")
+      itin = [firstNode]
+      newItin = Schedule.sits(itin, e, 800)
+      # Node 0 is even ending at 9
+      g1 = newItin[0].type == 0 && newItin[0].endtime == 900
+      e1 = Schedule.new_event("Event2", 1000, 1200, 200, "Sproul Plaza, Berkeley, CA")
+      newItin = Schedule.sits(newItin, e1, 1000)
+      # Node 1 is freetime
+      f2 = newItin[1].type == 1 
+      # Node 2 is type travel
+      f3 = newItin[2].type == 2
+      # Duration of travel-time
+      s3 = newItin[1].duration
+      # Node 3 is event ending at 1200
+      f4 = newItin[3].type == 0 && newItin[3].endtime == 1200
+      # Node 4 is free time and lasts 12 hours
+      f5 = newItin[4].type == 1 && newItin[4].duration ==1200
+
+      e2 = Schedule.new_event("Event3", 2200, 2230, 30, "Delaware St, Berkeley, CA")
+      newItin = Schedule.sits(newItin, e2, 2200)
+      # Node 5 is freetime
+      h2 = newItin[4].type == 1 
+      # Node 5 is type travel
+      h3 = newItin[5].type == 2
+      # Node 6 is event ending at 1200
+      h4 = newItin[6].type == 0 && newItin[6].endtime == 2230
+      # Node 7 is free time and lasts 12 hours
+      h5 = newItin[7].type == 1 && newItin[7].start == 2230
+
+      total = e1 && f2 && f3 && f4 && f5 && h2 && h3 && h4 && h5
+      expect(total).to eq(true) 
+  end
+
+
+<<<<<<< Updated upstream
     it "schedules too many events" do
   		firstNode = Schedule.new_node(800,2400,1600,1,nil)
         itin1 = [firstNode]
@@ -158,3 +250,6 @@ describe Schedule do
     end
     
     end
+=======
+end
+>>>>>>> Stashed changes
