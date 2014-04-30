@@ -259,6 +259,25 @@
 										</td>
 									</tr>
 								<% end %>
+								<% if node_type == -1 # set to 1 to show free space %>
+									<tr class="success">
+										<td class="view_event_list_text">
+											<!-- Empty because no number -->
+										</td>
+										<td class="view_event_list_text">
+											<!-- Empty because no number -->
+										</td>
+										<td class="view_event_list_text">
+											Free:
+										</td>
+										<td class="view_event_list_text">
+											<% if (n.duration-(n.duration%100))/100 > 0 %><%= (n.duration-(n.duration%100))/100 %> hr, <% end %><%if(n.duration % 100)<10%>0<%end%><%= (n.duration % 100) %> minutes
+										</td>
+										<td class="view_event_list_text">
+											<!-- Empty because no number -->
+										</td>
+									</tr>
+								<% end %>
 
 
 								

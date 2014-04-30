@@ -217,43 +217,47 @@ class Schedule < ActiveRecord::Base
 
     #Ryan DID THIS MESS needs travel time
     #first if checks free type, second checks start within free slot, third checks start + duration finishes in time
-     def self.fits(itinerary, event)
-     	#If no free space left, short-circuit
-     	if itinerary[itinerary.length - 1].type == 0
-     		return false
-     	end
-
+    def self.fits(itinerary, event)
+        #If no free space left, short-circuit
+        if itinerary[itinerary.length - 1].type == 0
+            return false
+        end
+ 
         if time_minus_duration(event.end_time,event.start_time) < event.duration
             return false
         end
-
-     	#Then the Node after the last event in the itin must be contain Freespace
-
+ 
+        #Then the Node after the last event in the itin must be contain Freespace
+ 
         free = lastevent(itinerary) + 1
         if free == 0
             return event.start_time
         end
-
+ 
         #Calculate the time it takes to get to the prev. event from our new event
         #If the start time is after the start of the free time plus travel time
         # puts "FITS: first event: " + itinerary[free-1].event.to_s
         # puts "FITS: second event: " + event.to_s + event.title
-
+ 
         travel = travel_time(itinerary[free-1].event, event)
+ 
+        if itinerary[free].duration < event.duration
+            return false
+        end
 
         if event.start_time >= time_plus_duration(itinerary[free].start,travel)
             if time_plus_duration(event.start_time,event.duration)<=itinerary[free].endtime
-                if time_plus_duration(itinerary[free].start, travel) <= itinerary[free].start
+                if time_minus_duration(itinerary[free].duration, event.duration) < travel
                     return false
                 end
                 return event.start_time
             end
         end
-
-
+ 
+ 
         if time_minus_duration(event.end_time,event.duration) >= time_plus_duration(itinerary[free].start , travel)
             if time_plus_duration(time_plus_duration(itinerary[free].start,travel), event.duration) <= itinerary[free].endtime
-                if time_plus_duration(itinerary[free].start,travel) <= itinerary[free].start
+                if time_minus_duration(itinerary[free].duration, event.duration) < travel
                     return false
                 end
                 return time_plus_duration(itinerary[free].start, travel)
@@ -262,6 +266,7 @@ class Schedule < ActiveRecord::Base
         #No space :,(
         return false
     end
+
 
     
     def self.score(itin,optim)
@@ -356,6 +361,7 @@ class Schedule < ActiveRecord::Base
 
         while i >= 0 do
             if not itinerary[i].nil?
+                # If the itinerary item at i is an event return i
                 if (itinerary[i].type == 0)
                     return i
                 end
@@ -425,7 +431,9 @@ class Schedule < ActiveRecord::Base
         e_end = event.end_time
         e_duration = event.duration
         #DO NOT USE TIME_PLUS_DURATION
-        fits_end = fits_start+e_duration
+        # WTF DALTON ^
+        # fits_end = fits_start+e_duration
+        fits_end = time_plus_duration(fits_start, e_duration)
 
       #If this is our first event added, take special precautions
         if (length == 1)
