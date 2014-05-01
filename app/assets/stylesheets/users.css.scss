@@ -170,7 +170,7 @@ textarea {
 	height:50px;
 	background-color:#f8f8f8;
 	text-align:left;
-	padding:15px;
+	padding:0px;
 	border-top:1px solid #E7E7E7;
 }
 
@@ -181,6 +181,10 @@ textarea {
 .event_form_button_text {
 	font-size:13px;
 	color:#777777;
+}
+
+.toggle_rt_button {
+	color:#00FF00;
 }
 
 
