@@ -284,7 +284,7 @@
 							<% end %>
 							</tbody>
 						</table>
-						<% if (@schedule_events.length == 1 and @schedule_events[0].type == 1) and (not @newest_schedule_event.nil?) %>
+						<% if (@schedule_events.length == 1 and @schedule_events[0].type == 1) and @event_list.present? %>
 							<div class="btn-group reset-button" align="center">
 							<h3>SCHEDULE CONFLICT</h3>
 							<%= form_tag("/users/delete_all_schedule_events", method: "post") do %>
