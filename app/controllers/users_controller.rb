@@ -27,8 +27,8 @@ class UsersController < ApplicationController
 
 		@user_events = current_user.events.order(start_time: :asc, end_time: :asc)
 		@schedule = current_user.schedules.find(id)
-		event_list = current_user.schedules.find(id).events.order(start_time: :asc, end_time: :asc).to_a
-		itinerary = Schedule.schedule_events([], nil, event_list, 0)
+		@event_list = current_user.schedules.find(id).events.order(start_time: :asc, end_time: :asc).to_a
+		itinerary = Schedule.schedule_events([], nil, @event_list, 0)
 		# @schedule_events = Schedule.find_events(itinerary[0])
 		@schedule_events = itinerary[0]
 		puts "SCHEDULE: " + itinerary[0].to_s
@@ -260,6 +260,52 @@ class UsersController < ApplicationController
 		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], newest_schedule_event: @newest_schedule_event
 	end
 
+	# input 2400 time format
+    # outputs difference in 24 hour format
+    def time_between(first_time, second_time)
+        if (first_time == second_time)
+            return 0
+        end
+        start_hour = ((first_time - (first_time % 100)) / 100)
+        end_hour = ((second_time - (second_time % 100)) / 100)
+        start_minutes = (first_time % 100)
+        end_minutes = (second_time % 100)
+        
+        if second_time < first_time
+            delta_hours = (24 + end_hour) - start_hour
+        else
+            delta_hours = end_hour - start_hour
+        end
+        delta_minutes = end_minutes - start_minutes
+        if delta_minutes < 0
+            delta_hours = (delta_hours - 1) % 24
+            delta_minutes = (delta_minutes % 60)
+        end
+        
+        return (100 * delta_hours) + delta_minutes
+    end
+    
+    # 
+    def time_plus_duration(time, duration)
+        new_hour = (((time - (time % 100)) / 100) + ((duration - (duration % 100)) / 100)) % 24
+        new_minute = (time % 100) + (duration % 100)
+        if new_minute > 59
+            new_hour = (new_hour + 1) % 24
+            new_minute = new_minute % 60
+        end
+        return new_hour * 100 + new_minute
+    end
+    
+    def time_minus_duration(time, duration)
+        new_hour = (((time - (time % 100)) / 100) - ((duration - (duration % 100)) / 100)) % 24
+        new_minute = (time % 100) - (duration % 100)
+        if new_minute < 0
+            new_hour = (new_hour - 1) % 24
+            new_minute = new_minute % 60
+        end
+        return new_hour * 100 + new_minute
+    end
+
 	def add_new_event_to_schedule
 		@errors = []
 		@schedule_errors = []
@@ -301,6 +347,10 @@ class UsersController < ApplicationController
 
 		if ((duration % 100) % 60) != (duration % 100) || (duration % 2400) != duration
 			@errors.push("Duration is not in correct format[hhmm]")
+		end
+
+		if (time_between(start_time, end_time) < duration)
+			@errors.push("Duration is longer than the time frame.")
 		end
 
 		# If any errors occur, reject event creation and display errors

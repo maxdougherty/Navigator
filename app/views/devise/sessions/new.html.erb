@@ -1,17 +1,29 @@
+<%= stylesheet_link_tag "Navigator.css" %>
 <center>
 <h2>Login</h2>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" type="text/javascript"></script>
+<script src="js/bootstrap.min.js"></script>
 <div class="sign_in_page">
+
 <%= form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f| %>
-  <div><% f.label :email %><br />
+<% if alert %>
+  <% if alert != "You need to sign in or sign up before continuing." %>
+	  <div class="alert alert-danger alert-dismissable">
+	  	<!-- <button type="button" class="close" data-dismiss="alert" aria-hidden="true">
+	      &times;
+	   </button> -->
+	  	<strong>Warning: </strong><%= alert %>
+	  </div>
+  <% end %>
+
+<% end %>
+
+  <div>
   <%= f.email_field :email, :autofocus => true, :placeholder => "Email Address"%></div>
 
-  <div class="input_field"><% f.label :password %>
+  <div class="input_field">
   <%= f.password_field :password , :placeholder => "Password" %></div>
 
-  <% if devise_mapping.rememberable? -%>
-  	<!-- TODO: Commented out remember me button -->
-    <div><% f.check_box :remember_me %> <% f.label :remember_me %></div>
-  <% end -%>
   <br>
   <div ><%= f.submit "Sign in", :class => "btn btn-lg btn-primary btn-block" %></div>
 <% end %>
