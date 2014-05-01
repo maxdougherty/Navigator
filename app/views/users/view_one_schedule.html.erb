@@ -195,13 +195,15 @@
 						<% end %>
 							
 						<table class="table" style="margin-bottom:0px">
-							<thead>
-								<th>#</th>
-								<th>Event</th>
-								<th>Time</th>
-								<th>Location</th>
-								<th>Actions</th>
-							</thead>
+							<% if not ((@schedule_events.length == 1 and @schedule_events[0].type == 1) and @event_list.present?) %>
+								<thead>
+									<th>#</th>
+									<th>Event</th>
+									<th>Time</th>
+									<th>Location</th>
+									<th>Actions</th>
+								</thead>
+							<% end %>
 							<tbody>
 							<% edex = 64 %>
 							<% @schedule_events.each_with_index do |n, index| %>
@@ -287,13 +289,52 @@
 						<% if (@schedule_events.length == 1 and @schedule_events[0].type == 1) and @event_list.present? %>
 							<!-- TODO: PUT SCHEDULE HERE -->
 							<div class="btn-group reset-button" align="center">
-							<h3>SCHEDULE CONFLICT</h3>
-							<%= form_tag("/users/delete_all_schedule_events", method: "post") do %>
-								<% hidden_field_tag(:event_id, @newest_schedule_event) #.id%>
-								<%= hidden_field_tag(:schedule_id, @schedule.id) %>
-								<%= submit_tag("Reset Schedule", :class => "btn btn-lg btn-danger") %>
-							<% end %>
-							<br>
+							<div class="alert alert-danger alert-dismissable" style="margin-bottom:0px">
+								<strong>Schedule Conflict:</strong> Remove an Event to Continue.
+							</div>
+
+							<table class="table" style="margin-bottom:0px">
+								<thead>
+									<th>#</th>
+									<th>Event</th>
+									<th>Time</th>
+									<th>Location</th>
+									<th>Actions</th>
+								</thead>
+							<tbody>
+								<% @event_list.each_with_index do |e, index| %>
+									<tr class="danger">
+										<td class="view_event_list_text">
+											<%= index + 1 %>
+										</td>
+										<td class="view_events_list_text">
+											<b style="white-space: nowrap; overflow: hidden;"><%= e.title.split.map(&:capitalize).join(' ') %></b><br>
+											<% if (e.duration-(e.duration%100))/100 > 0 %><%= (e.duration-(e.duration%100))/100 %> h, <% end %><%if(e.duration % 100)<10%>0<%end%><%= (e.duration % 100) %> m
+										</td>
+										<td class="view_events_list_text" style="white-space: nowrap; overflow: hidden;">
+											<%= (e.start_time-(e.start_time%100))/100 %>:<%if(e.start_time % 100)<10%>0<%end%><%= (e.start_time % 100) %>
+											<span class="glyphicon glyphicon-arrow-right"></span>
+											<%= (e.end_time-(e.end_time%100))/100 %>:<%if(e.end_time % 100)<10%>0<%end%><%= (e.end_time % 100) %>
+										</td>
+										<td class = "view_event_list_text">
+											<%= e.address.split.map(&:capitalize).join(' ') %>
+										</td>
+											
+										<td >
+											<div class="btn-group">
+											<%= form_tag("/users/delete_event_from_schedule", method: "post") do %>
+												<%= hidden_field_tag(:event_id, e.id) %>
+												<%= hidden_field_tag(:schedule_id, @schedule.id) %>
+												<%= submit_tag("Remove", :class => "btn btn-sm btn-danger") %>
+											<% end %>
+											</div>
+										</td>
+									</tr>
+								<% end %>
+							</tbody>
+							</table>
+
+
 							</div>
 						<% end %>
 					</div>
