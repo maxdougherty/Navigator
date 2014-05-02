@@ -319,6 +319,17 @@ class UsersController < ApplicationController
         return new_hour * 100 + new_minute
     end
 
+    def format_time(time)
+		if(time.to_s[-2..-1].to_s == "pm")
+			time = (time.split(':')[0].to_i + 12).to_s + time.split(':')[1][0..-3]
+		elsif(time.to_s[-2..-1] == "am")
+			time = time.split(':')[0] + time.split(':')[1][0..-3]
+		else
+			time = time.split(':')[0] + time.split(':')[1]
+		end
+		return time
+    end
+
 	def add_new_event_to_schedule
 		@errors = []
 		@schedule_errors = []
@@ -332,10 +343,10 @@ class UsersController < ApplicationController
 		end
 		# Convert parameters to appropriate types
 		title = params[:title]
-		start_time = params[:start_time].split(':').join("").to_i
-		end_time = params[:end_time].split(':').join("").to_i
-		duration = params[:duration].split(':').join("").to_i
 		address = params[:address]
+		start_time = format_time(params[:start_time]).to_i
+		end_time = format_time(params[:end_time]).to_i
+		duration = format_time(params[:duration]).to_i
 
 		# Validate inputs
 		if (title.length > MAX_TITLE_LENGTH)

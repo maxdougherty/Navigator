@@ -1,6 +1,9 @@
 $(document).ready(
 	function() {
 		$('.time-input').timepicker();
-		console.log('TESTING TOO');
-	}
-);
+		$('.duration-input').timepicker({   'timeFormat': 'H:i',
+						    'minTime': '12:15am',
+						    'maxTime': '11:30pm',
+						    'step': 15
+		})
+});
