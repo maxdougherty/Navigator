@@ -25,11 +25,24 @@ class UsersController < ApplicationController
 	def view_one_schedule
 		id = params[:schedule_id].to_i
 
+		# Warning: Highjacking Schedule.has_events to control roundtrip
+		@roundtrip_state = Schedule.find(id).has_events
+		# Check if schedule is round-trip
+		rt_val = (params[:roundtrip] == 'true')
+		if rt_val == true
+			# If true XOR with current state to flip
+			Schedule.find(id).update(has_events: (@roundtrip_state ^ rt_val))
+			@roundtrip_state = (@roundtrip_state ^ rt_val)
+		end
+
 		@user_events = current_user.events.order(start_time: :asc, end_time: :asc)
 		@schedule = current_user.schedules.find(id)
 		@event_list = current_user.schedules.find(id).events.order(start_time: :asc, end_time: :asc).to_a
 		itinerary = Schedule.schedule_events([], nil, @event_list, 0)
 		# @schedule_events = Schedule.find_events(itinerary[0])
+		# Warning: Highjacking Schedule.has_events to control roundtrip
+
+
 		@schedule_events = itinerary[0]
 		puts "SCHEDULE: " + itinerary[0].to_s
 		puts "SCHEDULE LENGTH: " + itinerary[0].length.to_s
@@ -218,7 +231,7 @@ class UsersController < ApplicationController
 			return
 		end
 
-		schedule = current_user.schedules.create(title: title, start_time: 0, end_time: 2359, day: day, num_events: 0)
+		schedule = current_user.schedules.create(title: title, start_time: 0, end_time: 2359, day: day, num_events: 0, has_events: false)
 		
 		redirect_to :action => 'view_schedules'
 		return

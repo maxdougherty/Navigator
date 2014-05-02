@@ -30,14 +30,14 @@
 
 
 			if (count < 2) {
-				var myLatlng = new google.maps.LatLng(37.8,-122);
+				var myLatlng = new google.maps.LatLng(37.8,-122.3);
 				<% Schedule.find_events(@schedule_events).each_with_index do |e, index| %>
 					myLatlng = new google.maps.LatLng(<%=e.latitude%>, <%=e.longitude%>);
 				<% end %>
 
 				var map_canvas = document.getElementById('map_canvas')
 				var mapOptions = {
-			    	zoom: 13,
+			    	zoom: 12,
 			    	center: myLatlng,
 			    	panControl: false,
 				    zoomControlOptions: {
@@ -72,7 +72,12 @@
 				var start;
 				var end;
 				var waypts = [];
-				<% Schedule.find_events(@schedule_events).each_with_index do |e, index| %>
+				<% map_events = Schedule.find_events(@schedule_events) %>
+				<% if @schedule.has_events %>
+					<% map_events.push(map_events[0]) %>
+					<% @schedule.num_events += 1 %>
+				<% end %>
+				<% map_events.each_with_index do |e, index| %>
 					var newLat = new google.maps.LatLng(<%=e.latitude%>, <%=e.longitude%>);
 				    <% if index == 0 %>
 				    	start = newLat
@@ -163,9 +168,22 @@
 	    		</div> -->
 
 	    		<div class="event_form_button" id="view_schedule_button">
-	    			<p class="event_form_button_text" id="view_schedule_button_text">
-	    				— Hide Schedule (<%= @schedule.title.capitalize %>)
-    				</p>
+	    			<div class="navbar">
+		    			<p class="event_form_button_text navbar-text pull-left" id="view_schedule_button_text">
+		    				— Hide Schedule (<%= @schedule.title.capitalize %>)
+	    				</p>
+	    				<div class="event_form_button_text navbar-text pull-right" style="margin:7.5px">
+							<%= form_tag("/users/view_one_schedule", method: "get", :class => "toggle_rt_button") do %>
+								<%= hidden_field_tag(:roundtrip, true) %>
+								<%= hidden_field_tag(:schedule_id, @schedule.id) %>
+								<% if @schedule.has_events %>
+									<%= submit_tag("Make Path", :class => "btn btn-sm btn-primary") %>
+								<% else %>
+									<%= submit_tag("Make Cycle", :class => "btn btn-sm btn-primary") %>
+								<% end %>
+							<% end %>
+	    				</div>
+    				</div>
     				<div id="schedule_title" style="display:none;">
     					<%= @schedule.title.capitalize %>
 					</div>
@@ -173,6 +191,7 @@
 	    		<script>
 					$( "#view_schedule_button" ).click(function() {
 					  $( "#schedule_list" ).toggle( "blind" );
+					  $(".toggle_rt_button").toggle( "clip");
 					  var outstr = $("#view_schedule_button_text").html();
 					  outstr = $.trim(outstr);
 					  outstr = outstr.split(' ').slice(0,3).join(' ');
@@ -284,6 +303,49 @@
 
 								
 							<% end %>
+							<% if @schedule.has_events and map_events.present? %>
+								<% extra_travel = Schedule.travel_time(map_events[-2], map_events.last) %>
+								<tr class="default">
+									<td class="view_event_list_text">
+										<!-- Empty because no number -->
+									</td>
+									<td class="view_event_list_text">
+										<!-- Empty because no number -->
+									</td>
+									<td class="view_event_list_text">
+										Travel:
+									</td>
+									<td class="view_event_list_text">
+										<% if (extra_travel-(extra_travel%100))/100 > 0 %><%= (extra_travel-(extra_travel%100))/100 %> hr, <% end %><%if(extra_travel % 100)<10%>0<%end%><%= (extra_travel % 100) %> minutes
+									</td>
+									<td class="view_event_list_text">
+										<!-- Empty because no number -->
+									</td>
+								</tr>
+								<% e = map_events.last %>
+								<!-- XXXXXX -->
+								<% n = @schedule_events[Schedule.lastevent(@schedule_events)] %>
+								<tr class="active">
+									<td class="view_event_list_text">
+									<% edex += 1 %>
+									<%= edex.chr %>
+									</td>
+									<td class="view_event_list_text" style="white-space: nowrap; overflow: hidden;">
+										<b><%= e.title.split.map(&:capitalize).join(' ') %></b>
+									</td>
+									<td class="view_event_list_text" style="white-space: nowrap; overflow: hidden;">
+										<% arr_time = Schedule.time_plus_duration(n.endtime, extra_travel) %>
+										Arrival: <%= (arr_time-(arr_time%100))/100 %>:<%if(arr_time % 100)<10%>0<%end%><%= (arr_time % 100) %>
+									</td>
+
+									<td class="view_event_list_text">
+										<%= e.address.split.map(&:capitalize).join(' ') %>
+									</td>
+									<td>
+									</td>
+								</tr>
+
+							<% end %>
 							</tbody>
 						</table>
 						<% if (@schedule_events.length == 1 and @schedule_events[0].type == 1) and @event_list.present? %>
@@ -340,9 +402,14 @@
 					</div>
 				<div class="event_form_button" id="toggle-directions-button">
 				<!-- Realized that this should not be a class -->
-	    			<p class="event_form_button_text" id="toggle-directions-button-text">
-	    				+ Show Directions
-					</p>
+					<div class="navbar">
+		    			<p class="event_form_button_text navbar-text pull-left" id="toggle-directions-button-text">
+		    				+ Show Directions
+						</p>
+						<p class="event_form_button_text navbar-text pull-left">
+
+						</p>
+					</div>
 	    		</div>
 	    		<script>
 					$( "#toggle-directions-button" ).click(function() {
@@ -361,9 +428,11 @@
 	    	</div>
 	    	<div id="panel" class="event-div">
 	    		<div class="event_form_button" id="add_new_event_button">
-	    			<p class="event_form_button_text" id="add_new_event_button_text">
-	    				+ Add New Event
-    				</p>
+	    			<div class="navbar">
+		    			<p class="event_form_button_text navbar-text pull-left" id="add_new_event_button_text">
+		    				+ Add New Event
+	    				</p>
+    				</div>
 	    		</div>
 	    		<script>
 					$( "#add_new_event_button" ).click(function() {
@@ -409,9 +478,11 @@
 					<br>
 				</div>
 				<div class="event_form_button" id="add_saved_event_button">
-	    			<p class="event_form_button_text" id="add_saved_event_button_text">
-	    				+ Add Saved Event
-    				</p>
+					<div class="navbar">
+		    			<p class="event_form_button_text navbar-text pull-left" id="add_saved_event_button_text">
+		    				+ Add Saved Event
+	    				</p>
+    				</div>
 	    		</div>
 	    		<script>
 					$( "#add_saved_event_button" ).click(function() {

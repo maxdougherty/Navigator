@@ -54,9 +54,9 @@ class Schedule < ActiveRecord::Base
         if transit_time.empty?
             # wait statement
             # Recursive call
-            puts "NO ROUTE FOUND"
-            puts "origin: " + origin.title + " " + origin.to_s
-            puts "destination: " + destination.title + " " + destination.to_s
+            # puts "NO ROUTE FOUND"
+            # puts "origin: " + origin.title + " " + origin.to_s
+            # puts "destination: " + destination.title + " " + destination.to_s
             sleep(1)
             transit_time = travel_time(origin, destination, iterations - 1)
             @travel_memo[[origin.id, destination.id]] = transit_time
@@ -153,14 +153,13 @@ class Schedule < ActiveRecord::Base
             rem_event_list = rem_events.to_s
             # TODO: ENSURE THAT THIS LOOKUP WORKS
             if @schedule_memo.has_key?([event_list, e, rem_event_list])
-                puts "MEMOIZING!!!!"
                 return @schedule_memo[[event_list, e, rem_event_list]]
             end
 
 
             # Ensure the event will fit
-            puts "FITS INPUTS ITIN: " + itin.to_s
-            puts "FITS INPUTS EVENT: " + e.title + ", " + e.to_s
+            # puts "FITS INPUTS ITIN: " + itin.to_s
+            # puts "FITS INPUTS EVENT: " + e.title + ", " + e.to_s
 
             fits_value = fits(itin, e)
             # puts "FITS output: " + fits_value.to_s
