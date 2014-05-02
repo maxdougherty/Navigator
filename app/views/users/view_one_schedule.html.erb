@@ -37,9 +37,14 @@
 
 				var map_canvas = document.getElementById('map_canvas')
 				var mapOptions = {
-			    	zoom: 12,
+			    	zoom: 16,
 			    	center: myLatlng,
 			    	panControl: false,
+			    	mapTypeControl: true,
+			    	mapTypeControlOptions: {
+			    		position: google.maps.ControlPosition.BOTTOM_LEFT,
+				        style: google.maps.ZoomControlStyle.SMALL
+			    	},
 				    zoomControlOptions: {
 				        position: google.maps.ControlPosition.LEFT_BOTTOM,
 				        style: google.maps.ZoomControlStyle.SMALL
@@ -57,11 +62,18 @@
 
 			} else {
 		      	directionsDisplay = new google.maps.DirectionsRenderer();
+		      	directionsDisplay.setOptions({ preserveViewport: false });
+
 				var myLatlng = new google.maps.LatLng(37.8,-122.3);
 				var mapOptions = {
 					zoom: 10,
 				    center: myLatlng,
 				    panControl: false,
+				    mapTypeControl: true,
+			    	mapTypeControlOptions: {
+			    		position: google.maps.ControlPosition.BOTTOM_LEFT,
+				        style: google.maps.ZoomControlStyle.SMALL
+			    	},
 				    zoomControlOptions: {
 				        position: google.maps.ControlPosition.LEFT_BOTTOM,
 				        style: google.maps.ZoomControlStyle.SMALL
@@ -460,14 +472,11 @@
 						<%= text_field_tag(:title, nil,
 							placeholder: 'Event Name', :class => "input-field") %><br>
 						<% label_tag(:start_time, "Start Time: ") %>
-						<%= text_field_tag(:start_time, nil,
-							placeholder: 'Start Time (e.g. 1200)', :class => "input-field") %><br>
+						<%= text_field_tag(:start_time, nil, placeholder: 'Start Time (e.g. 11:00)', :class => "input-field",) %><br>
 						<% label_tag(:end_time, "End Time: ") %>
-						<%= text_field_tag(:end_time, nil,
-							placeholder: 'End Time (e.g. 1430)', :class => "input-field") %><br>
+						<%= text_field_tag(:end_time, nil, placeholder: 'End Time (e.g. 16:00)', :class => "input-field") %><br>
 						<% label_tag(:duration, "Duration: ") %>
-						<%= text_field_tag(:duration, nil, 
-							placeholder: 'Duration (e.g. 100)', :class => "input-field") %><br>
+						<%= text_field_tag(:duration, nil, placeholder: 'Duration (e.g. 1:30) =  1hr 30min', :class => "input-field") %><br>
 						<%= text_field_tag(:address, nil,
 							placeholder: 'Address', :class => "input-field") %><br>
 						<%= label_tag(:saving, "Save Event") %>
