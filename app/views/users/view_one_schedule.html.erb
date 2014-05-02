@@ -474,7 +474,7 @@
 					  }
 					});
 				</script>
-	    		<div id="event_form" style="display:none;">
+	    		<div id="event_form" style="display:none; padding:7.5px;">
 					<% if not @errors.nil? %>
 						<h4> ERRORS: </h4>
 						<ul>
@@ -543,18 +543,10 @@
 
 				<% if @saved %>
 					<div id="saved_event_list">
-						<table class="table table-striped" style="margin-bottom:0px">
-						<thead>
-							<th>Event</th>
-							<th>Range</th>
-							<th>Location</th>
-							<th>Actions</th>
-							<th></th>
-						</thead>
-					<tbody>
 				<% else %>
 					<div id="saved_event_list" style = "display:none;">
-						<table class="table table-striped" style="margin-bottom:0px">
+				<% end %>
+						<table class="table table-striped" style="margin-bottom:0px; display:none;">
 						<thead>
 							<th>Event</th>
 							<th>Range</th>
@@ -563,7 +555,7 @@
 							<th></th>
 						</thead>
 						<tbody>
-				<%end %>
+
 
 				<% @user_events.each_with_index do |e, index| %>
 					<tr>
@@ -600,8 +592,76 @@
 				<% end %>
 				</tbody>
 				</table>
-				</div>
-				
+
+
+ 				<% @user_events.each_with_index do |e, index| %>
+ 					<div class="saved-event-button" id=<%= "saved-event-"+index.to_s %>>
+ 						<div class="saved-event-top">
+ 							<div
+ 							<div class="saved-event-title">
+ 								<b style="white-space: nowrap; overflow: hidden;"><%= e.title.split.map(&:capitalize).join(' ') %></b>
+ 							</div>
+ 							<div class="saved-event-delete-button">
+ 								<%= form_tag("/users/delete_event", method: "post") do %>
+ 									<%= hidden_field_tag(:event_id, e.id) %>
+ 									<%= hidden_field_tag(:schedule_id, @schedule.id) %>
+ 									<%= submit_tag('&times;'.html_safe, :class => "btn btn-sm btn-danger saved-event-delete-button-input") %>
+ 								<% end %>
+ 							</div>
+ 							<div class="hidden-add-saved-event-button" style="display:none">
+ 								<%= form_tag("/users/add_old_event_to_schedule", method: "post") do %>
+ 									<%= hidden_field_tag(:event_id, e.id) %>
+ 									<%= hidden_field_tag(:schedule_id, @schedule.id) %>
+ 									<%= submit_tag('&times;'.html_safe, :class => "btn btn-sm btn-danger saved-event-add-button") %>
+ 								<% end %>
+ 							</div>
+ 						</div>
+ 						<div class="saved-event-address">
+ 							<%= e.address.split.map(&:capitalize).join(' ') %>
+ 						</div>
+ 						<div class="time-graph">
+ 							<% range =  Schedule.time_between(e.start_time, e.end_time) %>
+ 							<% range = (60*((range -(range % 100))/100)) + (range % 100) %>
+ 							<% duration = e.duration %>
+ 							<% duration = (60*((duration -(duration % 100))/100)) + (duration % 100) %>
+ 							<% event_percent = ((duration*1.0)/range) %>
+ 							<div class="time-graph-empty" style=<%= "width:"+(((1-event_percent)*100)/2).to_s+"%" %>>
+ 								<div style="text-align:left;margin-left:-38px">
+ 								<%= ((e.start_time - e.start_time%100)/100).to_s + ":"%><%if e.start_time%100<10%>0<%end%><%= (e.start_time%100).to_s %>
+ 								</div>
+ 							</div>
+ 							<div class="time-graph-event" style=<%= "width:" + (event_percent*100).to_s+"%" %>>
+ 								<div style="text-align:center;color:#f8f8f8;overflow:visible;z-index:2">
+ 									<%= ((e.duration - e.duration%100)/100).to_s + ":"%><%if e.duration%100<10%>0<%end%><%= (e.duration%100).to_s %>
+ 								</div>
+ 							</div>
+ 							<div class="time-graph-empty" style=<%= "width:" + (((1-event_percent)*100)/2).to_s+"%" %>>
+ 								<div style="text-align:right;margin-right:-40px">
+ 								<%= ((e.end_time - e.end_time%100)/100).to_s + ":"%><%if e.end_time%100<10%>0<%end%><%= (e.end_time%100).to_s %>
+ 								</div>
+ 
+ 							</div>
+ 						</div>
+ 
+ 					
+ 					
+ 					</div>
+ 				<% end %>
+ 				<script>
+ 					// alert($.parent());
+ 					$(".saved-event-button").click(function(evt) {
+ 						// alert($(this).attr("id"));
+ 						// evt.stopPropagation();
+ 						// $(".saved-event-button").find(".saved-event-button").css("background-color", "red");
+ 						$(this).find(".saved-event-add-button").trigger("click");	
+ 					});
+ 
+ 					$(".saved-event-add-button").click(function(evt) {
+ 						evt.stopPropagation();
+ 					});
+ 				</script>
+ 				</div>
+ 				</div>
 	    	</div>
     	</div>
 	</div>
