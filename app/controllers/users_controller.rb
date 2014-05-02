@@ -6,6 +6,7 @@ class UsersController < ApplicationController
 	NO_RECORD = -2
 
 	before_filter :authenticate_user!
+	@saved = false
 
 	def index
   		@users = User.all
@@ -29,6 +30,7 @@ class UsersController < ApplicationController
 		@roundtrip_state = Schedule.find(id).has_events
 		# Check if schedule is round-trip
 		rt_val = (params[:roundtrip] == 'true')
+
 		if rt_val == true
 			# If true XOR with current state to flip
 			Schedule.find(id).update(has_events: (@roundtrip_state ^ rt_val))
@@ -50,6 +52,7 @@ class UsersController < ApplicationController
 		itin_type = itin_type[0].type
 		puts "SCHEDULE TYPE: " + itin_type.to_s
  		@errors = params[:errors]
+ 		@saved = params[:saved]
 		@newest_schedule_event = params[:newest_schedule_event]
 		render :view_one_schedule
 	end
@@ -196,6 +199,7 @@ class UsersController < ApplicationController
 
 		# Redisplay the events page.
 		# TODO: update with redirect
+		@saved = true;
 		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors
 		return
 	end
@@ -269,8 +273,9 @@ class UsersController < ApplicationController
 		event = Event.find(event_id)
 
 		@newest_schedule_event = event
+		@saved = true
 
-		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], newest_schedule_event: @newest_schedule_event
+		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], newest_schedule_event: @newest_schedule_event, saved: @saved
 	end
 
 	# input 2400 time format
@@ -394,6 +399,7 @@ class UsersController < ApplicationController
 
 		if not params[:saving].nil?
 			UsEsRelation.create(user_id: current_user.id, event_id: event.id)
+			@saved = true
 		end
 
 		schedule = Schedule.find(schedule_id)
@@ -404,7 +410,7 @@ class UsersController < ApplicationController
 
 		@newest_schedule_event = event
 
-		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors, newest_schedule_event: @newest_schedule_event
+		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors, newest_schedule_event: @newest_schedule_event, saved: @saved
 
 	end
 
