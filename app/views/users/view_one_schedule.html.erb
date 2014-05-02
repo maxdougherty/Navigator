@@ -119,7 +119,7 @@
 				    		location:newLat,
 				    		stopover:true
 				    		});
-				    	extLat = new google.maps.LatLng(<%=e.latitude%>+0.005 , <%=e.longitude%>);
+				    	extLat = new google.maps.LatLng(<%=e.latitude%> , <%=e.longitude%>+0.003);
 				    	bounds.extend(extLat);
 				    <% end %>
 				  <% end %>
