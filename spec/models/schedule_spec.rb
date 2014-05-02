@@ -200,8 +200,6 @@ describe Schedule do
       expect(total).to eq(true) 
   end
 
-
-<<<<<<< Updated upstream
     it "schedules too many events" do
   		firstNode = Schedule.new_node(800,2400,1600,1,nil)
         itin1 = [firstNode]
@@ -250,6 +248,3 @@ describe Schedule do
     end
     
     end
-=======
-end
->>>>>>> Stashed changes
