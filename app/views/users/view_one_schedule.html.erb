@@ -37,7 +37,7 @@
 
 				var map_canvas = document.getElementById('map_canvas')
 				var mapOptions = {
-			    	zoom: 5,
+			    	zoom: 10,
 			    	center: myLatlng,
 			    	panControl: false,
 				    zoomControlOptions: {
@@ -59,7 +59,7 @@
 		      	directionsDisplay = new google.maps.DirectionsRenderer();
 				var myLatlng = new google.maps.LatLng(37.8,-122.3);
 				var mapOptions = {
-					zoom: 15,
+					zoom: 10,
 				    center: myLatlng,
 				    panControl: false,
 				    zoomControlOptions: {
@@ -72,22 +72,31 @@
 				var start;
 				var end;
 				var waypts = [];
+				var bounds = new google.maps.LatLngBounds();
 				<% map_events = Schedule.find_events(@schedule_events) %>
 				<% if @schedule.has_events %>
 					<% map_events.push(map_events[0]) %>
 					<% @schedule.num_events += 1 %>
 				<% end %>
+
 				<% map_events.each_with_index do |e, index| %>
 					var newLat = new google.maps.LatLng(<%=e.latitude%>, <%=e.longitude%>);
+					var extLat;
 				    <% if index == 0 %>
 				    	start = newLat
+				    	extLat = new google.maps.LatLng(<%=e.latitude%>+0.008 , <%=e.longitude%>+0.001);
+				    	bounds.extend(extLat);
 				    <% elsif index == @schedule.num_events - 1 %>
 				    	end = newLat
+				    	extLat = new google.maps.LatLng(<%=e.latitude%>-0.008 , <%=e.longitude%>-0.001);
+				    	bounds.extend(extLat);
 				    <% else %>
 				    	waypts.push({
 				    		location:newLat,
 				    		stopover:true
 				    		});
+				    	//extLat = new google.maps.LatLng(<%=e.latitude%>+0.01 , <%=e.longitude%>);
+				    	//bounds.extend(extLat);
 				    <% end %>
 				  <% end %>
 
@@ -101,14 +110,15 @@
 		  		};
 		  		directionsService.route(request, function(response, status) {
 		    		if (status == google.maps.DirectionsStatus.OK) {
-		    			//directionsDisplay.setOptions({ preserveViewport: true});
+		    			directionsDisplay.setOptions({ preserveViewport: true});
 		      			directionsDisplay.setDirections(response);
 		    		}
 		  		});
 
 				  map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
 				  directionsDisplay.setMap(map);
-				  map.setCenter(end);
+				  map.fitBounds(bounds);
+				  map.setCenter(bounds.center);
 				  directionsDisplay.setPanel(document.getElementById('directions-panel'));
 				}
 			}
