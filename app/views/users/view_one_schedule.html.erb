@@ -1,12 +1,6 @@
 <%= stylesheet_link_tag "Navigator.css" %>
 <!-- SECOND NAV BAR -->
 
-<!-- Add JQuery -->
-<script src="//code.jquery.com/jquery-1.10.2.js"></script>
-<script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
-  		
-
-
 
 <div class="center">
 <div class="container" style="width:100%; padding-left:0px; padding-right:0px; height:100%">
@@ -37,9 +31,14 @@
 
 				var map_canvas = document.getElementById('map_canvas')
 				var mapOptions = {
-			    	zoom: 12,
+			    	zoom: 16,
 			    	center: myLatlng,
 			    	panControl: false,
+			    	mapTypeControl: true,
+			    	mapTypeControlOptions: {
+			    		position: google.maps.ControlPosition.BOTTOM_LEFT,
+				        style: google.maps.ZoomControlStyle.SMALL
+			    	},
 				    zoomControlOptions: {
 				        position: google.maps.ControlPosition.LEFT_BOTTOM,
 				        style: google.maps.ZoomControlStyle.SMALL
@@ -57,11 +56,18 @@
 
 			} else {
 		      	directionsDisplay = new google.maps.DirectionsRenderer();
+		      	directionsDisplay.setOptions({ preserveViewport: false });
+
 				var myLatlng = new google.maps.LatLng(37.8,-122.3);
 				var mapOptions = {
 					zoom: 10,
 				    center: myLatlng,
 				    panControl: false,
+				    mapTypeControl: true,
+			    	mapTypeControlOptions: {
+			    		position: google.maps.ControlPosition.BOTTOM_LEFT,
+				        style: google.maps.ZoomControlStyle.SMALL
+			    	},
 				    zoomControlOptions: {
 				        position: google.maps.ControlPosition.LEFT_BOTTOM,
 				        style: google.maps.ZoomControlStyle.SMALL
@@ -72,6 +78,7 @@
 				var start;
 				var end;
 				var waypts = [];
+				var bounds = new google.maps.LatLngBounds();
 				<% map_events = Schedule.find_events(@schedule_events) %>
 				<% if @schedule.has_events %>
 					<% if not ((@schedule_events.length == 1 and @schedule_events[0].type == 1) and @event_list.present?) %>
@@ -79,17 +86,25 @@
 						<% @schedule.num_events += 1 %>
 					<% end %>
 				<% end %>
+
 				<% map_events.each_with_index do |e, index| %>
 					var newLat = new google.maps.LatLng(<%=e.latitude%>, <%=e.longitude%>);
+					var extLat;
 				    <% if index == 0 %>
 				    	start = newLat
+				    	extLat = new google.maps.LatLng(<%=e.latitude%>+0.008 , <%=e.longitude%>+0.001);
+				    	bounds.extend(extLat);
 				    <% elsif index == @schedule.num_events - 1 %>
 				    	end = newLat
+				    	extLat = new google.maps.LatLng(<%=e.latitude%>-0.008 , <%=e.longitude%>-0.001);
+				    	bounds.extend(extLat);
 				    <% else %>
 				    	waypts.push({
 				    		location:newLat,
 				    		stopover:true
 				    		});
+				    	//extLat = new google.maps.LatLng(<%=e.latitude%>+0.01 , <%=e.longitude%>);
+				    	//bounds.extend(extLat);
 				    <% end %>
 				  <% end %>
 
@@ -103,12 +118,15 @@
 		  		};
 		  		directionsService.route(request, function(response, status) {
 		    		if (status == google.maps.DirectionsStatus.OK) {
+		    			directionsDisplay.setOptions({ preserveViewport: true});
 		      			directionsDisplay.setDirections(response);
 		    		}
 		  		});
 
 				  map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
 				  directionsDisplay.setMap(map);
+				  map.fitBounds(bounds);
+				  map.setCenter(bounds.center);
 				  directionsDisplay.setPanel(document.getElementById('directions-panel'));
 				}
 			}
@@ -461,13 +479,13 @@
 							placeholder: 'Event Name', :class => "input-field") %><br>
 						<% label_tag(:start_time, "Start Time: ") %>
 						<%= text_field_tag(:start_time, nil,
-							placeholder: 'Start Time (e.g. 1200)', :class => "input-field") %><br>
+							placeholder: 'Start Time (e.g. 1200)', :class => "input-field time-input") %><br>
 						<% label_tag(:end_time, "End Time: ") %>
 						<%= text_field_tag(:end_time, nil,
-							placeholder: 'End Time (e.g. 1430)', :class => "input-field") %><br>
+							placeholder: 'End Time (e.g. 1430)', :class => "input-field time-input") %><br>
 						<% label_tag(:duration, "Duration: ") %>
 						<%= text_field_tag(:duration, nil, 
-							placeholder: 'Duration (e.g. 100)', :class => "input-field") %><br>
+							placeholder: 'Duration (e.g. 100)', :class => "input-field duration-input") %><br>
 						<%= text_field_tag(:address, nil,
 							placeholder: 'Address', :class => "input-field") %><br>
 						<%= label_tag(:saving, "Save Event") %>
