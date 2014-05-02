@@ -1,18 +1,28 @@
 <%= stylesheet_link_tag "Navigator.css" %>
 <!-- SECOND NAV BAR -->
 
+<!-- Add JQuery -->
+<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+<script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+  		
+
+
 
 <div class="center">
-<div class="container" style="width:100%; padding-left:0px; padding-right:0px; height:100%">
-	
-
+<div class="container" style="width:100%; padding-left:0px; padding-right:0px; height:100%">	
+  
 		<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=true"></script>
 	    <!-- MAPS VIEW -->
+	    
 	    <script>
 	    var directionsDisplay;
 	    var directionsService = new google.maps.DirectionsService();
 	    var map;
-	    var bigCount
+	    var bigCount;
+
+
+	    
+
 
 	    function initialize() {
 	    	var count = 0
@@ -33,13 +43,9 @@
 				var bounds = new google.maps.LatLngBounds();
 				var mapOptions = {
 			    	zoom: 15,
+
 			    	center: myLatlng,
 			    	panControl: false,
-			    	mapTypeControl: true,
-			    	mapTypeControlOptions: {
-			    		position: google.maps.ControlPosition.BOTTOM_LEFT,
-				        style: google.maps.ZoomControlStyle.SMALL
-			    	},
 				    zoomControlOptions: {
 				        position: google.maps.ControlPosition.LEFT_BOTTOM,
 				        style: google.maps.ZoomControlStyle.SMALL
@@ -58,18 +64,11 @@
 
 			} else {
 		      	directionsDisplay = new google.maps.DirectionsRenderer();
-		      	directionsDisplay.setOptions({ preserveViewport: false });
-
 				var myLatlng = new google.maps.LatLng(37.8,-122.3);
 				var mapOptions = {
 					zoom: 8,
 				    center: myLatlng,
 				    panControl: false,
-				    mapTypeControl: true,
-			    	mapTypeControlOptions: {
-			    		position: google.maps.ControlPosition.BOTTOM_LEFT,
-				        style: google.maps.ZoomControlStyle.SMALL
-			    	},
 				    zoomControlOptions: {
 				        position: google.maps.ControlPosition.LEFT_BOTTOM,
 				        style: google.maps.ZoomControlStyle.SMALL
@@ -87,10 +86,8 @@
 
 				<% map_events = Schedule.find_events(@schedule_events) %>
 				<% if @schedule.has_events %>
-					<% if not ((@schedule_events.length == 1 and @schedule_events[0].type == 1) and @event_list.present?) %>
-						<% map_events.push(map_events[0]) %>
-						<% @schedule.num_events += 1 %>
-					<% end %>
+					<% map_events.push(map_events[0]) %>
+					<% @schedule.num_events += 1 %>
 				<% end %>
 
 				//<% map_events.each_with_index do |e, index| %>
@@ -209,7 +206,7 @@
 		    			<p class="event_form_button_text navbar-text pull-left" id="view_schedule_button_text">
 		    				— Hide Schedule (<%= @schedule.title.capitalize %>)
 	    				</p>
-	    				<div class="event_form_button_text navbar-text pull-right" id="roundtrip_button" style="margin:7.5px">
+	    				<div class="event_form_button_text navbar-text pull-right" style="margin:7.5px">
 							<%= form_tag("/users/view_one_schedule", method: "get", :class => "toggle_rt_button") do %>
 								<%= hidden_field_tag(:roundtrip, true) %>
 								<%= hidden_field_tag(:schedule_id, @schedule.id) %>
@@ -239,12 +236,16 @@
 					  	$("#view_schedule_button_text").html("— Hide Schedule " + "(" + schedule_name + ")");
 					  }
 					});
-
-					$('#roundtrip_button').click(function (evt) {
-    					evt.stopPropagation();
-					});
 				</script>
 					<div id="schedule_list">
+						<% if not @schedule_errors.nil? %>
+							<h4> ERRORS: </h4>
+							<ul>
+								<% @schedule_errors.each do |err| %>
+									<li><%= err %></li>
+								<% end %>
+							</ul>
+						<% end %>
 							
 						<table class="table" style="margin-bottom:0px">
 							<% if not ((@schedule_events.length == 1 and @schedule_events[0].type == 1) and @event_list.present?) %>
@@ -467,8 +468,6 @@
 	    				</p>
     				</div>
 	    		</div>
-
-
 	    		<script>
 					$( "#add_new_event_button" ).click(function() {
 					  $( "#event_form" ).toggle( "blind" );
@@ -503,6 +502,7 @@
 						<% label_tag(:duration, "Duration: ") %>
 						<%= text_field_tag(:duration, nil, 
 							placeholder: 'Duration', :class => "input-field duration-input") %><br>
+
 						<%= text_field_tag(:address, nil,
 							placeholder: 'Address', :class => "input-field") %><br>
 						<%= label_tag(:saving, "Save Event") %>
@@ -512,46 +512,63 @@
 					<% end %>
 					<br>
 				</div>
-				<% if not @errors.nil? %>
-	    			<script>
-	    			$( "#event_form" ).toggle( "blind" );
-	    			var outstr = $("#add_new_event_button_text").html();
-					if ($.trim(outstr) == "+ Add New Event") {
-						$("#add_new_event_button_text").html("— Add New Event");
-					} else {
-						$("#add_new_event_button_text").html("+ Add New Event");
-					}
-	    			</script>
-	    		<% end %>
-				<div class="event_form_button" id="add_saved_event_button">
-					<div class="navbar">
-		    			<p class="event_form_button_text navbar-text pull-left" id="add_saved_event_button_text">
-		    				+ Add Saved Event
-	    				</p>
-    				</div>
-	    		</div>
-	    		<script>
-					$( "#add_saved_event_button" ).click(function() {
-						$( "#saved_event_list" ).toggle( "blind" );
-						var outstr = $("#add_saved_event_button_text").html();
-						if ($.trim(outstr) == "+ Add Saved Event") {
-							$("#add_saved_event_button_text").html("— Add Saved Event");
-						} else {
-							$("#add_saved_event_button_text").html("+ Add Saved Event");
-						}
-					});
-				</script>
-				<div id="saved_event_list" style="display:none;">
-					<div style="display:none;">
-					<table class="table table-striped" style="margin-bottom:0px">
-					<thead>
-						<th>Event</th>
-						<th>Range</th>
-						<th>Location</th>
-						<th>Actions</th>
-						<th></th>
-					</thead>
+					<% if not @saved %>
+						<div class="event_form_button" id="add_saved_event_button">
+							<div class="navbar">
+				    			<p class="event_form_button_text navbar-text pull-left" id="add_saved_event_button_text">
+				    				+ Add Saved Event
+			    				</p>
+		    				</div>
+			    		</div>
+			    	<% else %>
+			    		<div class="event_form_button" id="add_saved_event_button">
+							<div class="navbar">
+				    			<p class="event_form_button_text navbar-text pull-left" id="add_saved_event_button_text">
+				    				— Add Saved Event
+			    				</p>
+		    				</div>
+			    		</div>
+			    	<% end %>
+
+			    
+
+			    	<script>
+						$( "#add_saved_event_button" ).on("click",function() {
+							$( "#saved_event_list" ).toggle( "blind" );
+							var outstr = $("#add_saved_event_button_text").html();
+							if ($.trim(outstr) == "+ Add Saved Event") {
+								$("#add_saved_event_button_text").html("— Add Saved Event");
+								//saved = true
+							} else {
+								$("#add_saved_event_button_text").html("+ Add Saved Event");
+								//saved = false
+							}
+						});
+					</script>
+
+				<% if @saved %>
+					<div id="saved_event_list">
+						<table class="table table-striped" style="margin-bottom:0px">
+						<thead>
+							<th>Event</th>
+							<th>Range</th>
+							<th>Location</th>
+							<th>Actions</th>
+							<th></th>
+						</thead>
 					<tbody>
+				<% else %>
+					<div id="saved_event_list" style = "display:none;">
+						<table class="table table-striped" style="margin-bottom:0px">
+						<thead>
+							<th>Event</th>
+							<th>Range</th>
+							<th>Location</th>
+							<th>Actions</th>
+							<th></th>
+						</thead>
+						<tbody>
+				<%end %>
 
 				<% @user_events.each_with_index do |e, index| %>
 					<tr>
@@ -574,6 +591,7 @@
 									<%= hidden_field_tag(:event_id, e.id) %>
 									<%= hidden_field_tag(:schedule_id, @schedule.id) %>
 									<%= submit_tag("ADD", :class => "btn btn-sm btn-primary add_old_event_button") %>
+
 								<% end %>
 								<%= form_tag("/users/delete_event", method: "post") do %>
 									<%= hidden_field_tag(:event_id, e.id) %>
@@ -587,75 +605,6 @@
 				<% end %>
 				</tbody>
 				</table>
-				</div>
-
-				<% @user_events.each_with_index do |e, index| %>
-					<div class="saved-event-button" id=<%= "saved-event-"+index.to_s %>>
-						<div class="saved-event-top">
-							<div
-							<div class="saved-event-title">
-								<b style="white-space: nowrap; overflow: hidden;"><%= e.title.split.map(&:capitalize).join(' ') %></b>
-							</div>
-							<div class="saved-event-delete-button">
-								<%= form_tag("/users/delete_event", method: "post") do %>
-									<%= hidden_field_tag(:event_id, e.id) %>
-									<%= hidden_field_tag(:schedule_id, @schedule.id) %>
-									<%= submit_tag('&times;'.html_safe, :class => "btn btn-sm btn-danger saved-event-delete-button-input") %>
-								<% end %>
-							</div>
-							<div class="hidden-add-saved-event-button" style="display:none">
-								<%= form_tag("/users/add_old_event_to_schedule", method: "post") do %>
-									<%= hidden_field_tag(:event_id, e.id) %>
-									<%= hidden_field_tag(:schedule_id, @schedule.id) %>
-									<%= submit_tag('&times;'.html_safe, :class => "btn btn-sm btn-danger saved-event-add-button") %>
-								<% end %>
-							</div>
-						</div>
-						<div class="saved-event-address">
-							<%= e.address.split.map(&:capitalize).join(' ') %>
-						</div>
-						<div class="time-graph">
-							<% range =  Schedule.time_between(e.start_time, e.end_time) %>
-							<% range = (60*((range -(range % 100))/100)) + (range % 100) %>
-							<% duration = e.duration %>
-							<% duration = (60*((duration -(duration % 100))/100)) + (duration % 100) %>
-							<% event_percent = ((duration*1.0)/range) %>
-							<div class="time-graph-empty" style=<%= "width:"+(((1-event_percent)*100)/2).to_s+"%" %>>
-								<div style="text-align:left;margin-left:-38px">
-								<%= ((e.start_time - e.start_time%100)/100).to_s + ":"%><%if e.start_time%100<10%>0<%end%><%= (e.start_time%100).to_s %>
-								</div>
-							</div>
-							<div class="time-graph-event" style=<%= "width:" + (event_percent*100).to_s+"%" %>>
-								<div style="text-align:center;color:#f8f8f8;overflow:visible;z-index:2">
-									<%= ((e.duration - e.duration%100)/100).to_s + ":"%><%if e.duration%100<10%>0<%end%><%= (e.duration%100).to_s %>
-								</div>
-							</div>
-							<div class="time-graph-empty" style=<%= "width:" + (((1-event_percent)*100)/2).to_s+"%" %>>
-								<div style="text-align:right;margin-right:-40px">
-								<%= ((e.end_time - e.end_time%100)/100).to_s + ":"%><%if e.end_time%100<10%>0<%end%><%= (e.end_time%100).to_s %>
-								</div>
-
-							</div>
-						</div>
-
-					
-					
-					</div>
-				<% end %>
-				<script>
-					// alert($.parent());
-					$(".saved-event-button").click(function(evt) {
-						// alert($(this).attr("id"));
-						// evt.stopPropagation();
-						// $(".saved-event-button").find(".saved-event-button").css("background-color", "red");
-						$(this).find(".saved-event-add-button").trigger("click");	
-					});
-
-					$(".saved-event-add-button").click(function(evt) {
-						evt.stopPropagation();
-					});
-				</script>
-
 				</div>
 				
 	    	</div>
