@@ -30,8 +30,9 @@
 				<% end %>
 
 				var map_canvas = document.getElementById('map_canvas')
+				var bounds = new google.maps.LatLngBounds();
 				var mapOptions = {
-			    	zoom: 16,
+			    	zoom: 15,
 			    	center: myLatlng,
 			    	panControl: false,
 			    	mapTypeControl: true,
@@ -52,6 +53,7 @@
 					    position: newLat,
 					    map: map,
 					});
+					
 				<% end %>
 
 			} else {
@@ -60,7 +62,7 @@
 
 				var myLatlng = new google.maps.LatLng(37.8,-122.3);
 				var mapOptions = {
-					zoom: 10,
+					zoom: 8,
 				    center: myLatlng,
 				    panControl: false,
 				    mapTypeControl: true,
@@ -79,11 +81,25 @@
 				var end;
 				var waypts = [];
 				var bounds = new google.maps.LatLngBounds();
+				//var maxLong = -9999999999;
+				//var maxLat;
+
+
 				<% map_events = Schedule.find_events(@schedule_events) %>
 				<% if @schedule.has_events %>
 					<% map_events.push(map_events[0]) %>
 					<% @schedule.num_events += 1 %>
 				<% end %>
+
+				//<% map_events.each_with_index do |e, index| %>
+					//<% if e.longitude %> > maxLong
+					//	maxLong = <%=e.longitude%>
+					//	maxLat = <%=e.latitude%>
+					//<% end %>
+				//<%end %>
+
+				//var extLat2 = new google.maps.LatLng(37.8 , -122.3);
+				//bounds.extend(extLat2);
 
 				<% map_events.each_with_index do |e, index| %>
 					var newLat = new google.maps.LatLng(<%=e.latitude%>, <%=e.longitude%>);
@@ -101,10 +117,11 @@
 				    		location:newLat,
 				    		stopover:true
 				    		});
-				    	//extLat = new google.maps.LatLng(<%=e.latitude%>+0.01 , <%=e.longitude%>);
-				    	//bounds.extend(extLat);
+				    	extLat = new google.maps.LatLng(<%=e.latitude%>+0.005 , <%=e.longitude%>);
+				    	bounds.extend(extLat);
 				    <% end %>
 				  <% end %>
+
 
 				  var travel = "WALKING"  //document.getElementById('mode').value;
 				  var request = {
