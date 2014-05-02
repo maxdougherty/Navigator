@@ -142,6 +142,9 @@ class Schedule < ActiveRecord::Base
             itin = []
             sched_start = earliest_start_time(rem_events)
             sched_end = latest_end_time(rem_events)
+            if sched_end < sched_start 
+                sched_end = 2359
+            end
             itin.push(Node.new(sched_start, sched_end, time_between(sched_start, sched_end), 1, nil))
             @schedule_memo = {}
             new_itin = itin
