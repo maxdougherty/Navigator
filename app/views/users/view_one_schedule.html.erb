@@ -81,8 +81,10 @@
 				var bounds = new google.maps.LatLngBounds();
 				<% map_events = Schedule.find_events(@schedule_events) %>
 				<% if @schedule.has_events %>
-					<% map_events.push(map_events[0]) %>
-					<% @schedule.num_events += 1 %>
+					<% if not ((@schedule_events.length == 1 and @schedule_events[0].type == 1) and @event_list.present?) %>
+						<% map_events.push(map_events[0]) %>
+						<% @schedule.num_events += 1 %>
+					<% end %>
 				<% end %>
 
 				<% map_events.each_with_index do |e, index| %>
@@ -190,7 +192,7 @@
 		    			<p class="event_form_button_text navbar-text pull-left" id="view_schedule_button_text">
 		    				— Hide Schedule (<%= @schedule.title.capitalize %>)
 	    				</p>
-	    				<div class="event_form_button_text navbar-text pull-right" style="margin:7.5px">
+	    				<div class="event_form_button_text navbar-text pull-right" id="roundtrip_button" style="margin:7.5px">
 							<%= form_tag("/users/view_one_schedule", method: "get", :class => "toggle_rt_button") do %>
 								<%= hidden_field_tag(:roundtrip, true) %>
 								<%= hidden_field_tag(:schedule_id, @schedule.id) %>
@@ -220,16 +222,12 @@
 					  	$("#view_schedule_button_text").html("— Hide Schedule " + "(" + schedule_name + ")");
 					  }
 					});
+
+					$('#roundtrip_button').click(function (evt) {
+    					evt.stopPropagation();
+					});
 				</script>
 					<div id="schedule_list">
-						<% if not @schedule_errors.nil? %>
-							<h4> ERRORS: </h4>
-							<ul>
-								<% @schedule_errors.each do |err| %>
-									<li><%= err %></li>
-								<% end %>
-							</ul>
-						<% end %>
 							
 						<table class="table" style="margin-bottom:0px">
 							<% if not ((@schedule_events.length == 1 and @schedule_events[0].type == 1) and @event_list.present?) %>
@@ -452,6 +450,8 @@
 	    				</p>
     				</div>
 	    		</div>
+
+
 	    		<script>
 					$( "#add_new_event_button" ).click(function() {
 					  $( "#event_form" ).toggle( "blind" );
@@ -495,6 +495,17 @@
 					<% end %>
 					<br>
 				</div>
+				<% if not @errors.nil? %>
+	    			<script>
+	    			$( "#event_form" ).toggle( "blind" );
+	    			var outstr = $("#add_new_event_button_text").html();
+					if ($.trim(outstr) == "+ Add New Event") {
+						$("#add_new_event_button_text").html("— Add New Event");
+					} else {
+						$("#add_new_event_button_text").html("+ Add New Event");
+					}
+	    			</script>
+	    		<% end %>
 				<div class="event_form_button" id="add_saved_event_button">
 					<div class="navbar">
 		    			<p class="event_form_button_text navbar-text pull-left" id="add_saved_event_button_text">
@@ -514,6 +525,7 @@
 					});
 				</script>
 				<div id="saved_event_list" style="display:none;">
+					<div style="display:none;">
 					<table class="table table-striped" style="margin-bottom:0px">
 					<thead>
 						<th>Event</th>
@@ -558,6 +570,75 @@
 				<% end %>
 				</tbody>
 				</table>
+				</div>
+
+				<% @user_events.each_with_index do |e, index| %>
+					<div class="saved-event-button" id=<%= "saved-event-"+index.to_s %>>
+						<div class="saved-event-top">
+							<div
+							<div class="saved-event-title">
+								<b style="white-space: nowrap; overflow: hidden;"><%= e.title.split.map(&:capitalize).join(' ') %></b>
+							</div>
+							<div class="saved-event-delete-button">
+								<%= form_tag("/users/delete_event", method: "post") do %>
+									<%= hidden_field_tag(:event_id, e.id) %>
+									<%= hidden_field_tag(:schedule_id, @schedule.id) %>
+									<%= submit_tag('&times;'.html_safe, :class => "btn btn-sm btn-danger saved-event-delete-button-input") %>
+								<% end %>
+							</div>
+							<div class="hidden-add-saved-event-button" style="display:none">
+								<%= form_tag("/users/add_old_event_to_schedule", method: "post") do %>
+									<%= hidden_field_tag(:event_id, e.id) %>
+									<%= hidden_field_tag(:schedule_id, @schedule.id) %>
+									<%= submit_tag('&times;'.html_safe, :class => "btn btn-sm btn-danger saved-event-add-button") %>
+								<% end %>
+							</div>
+						</div>
+						<div class="saved-event-address">
+							<%= e.address.split.map(&:capitalize).join(' ') %>
+						</div>
+						<div class="time-graph">
+							<% range =  Schedule.time_between(e.start_time, e.end_time) %>
+							<% range = (60*((range -(range % 100))/100)) + (range % 100) %>
+							<% duration = e.duration %>
+							<% duration = (60*((duration -(duration % 100))/100)) + (duration % 100) %>
+							<% event_percent = ((duration*1.0)/range) %>
+							<div class="time-graph-empty" style=<%= "width:"+(((1-event_percent)*100)/2).to_s+"%" %>>
+								<div style="text-align:left;margin-left:-38px">
+								<%= ((e.start_time - e.start_time%100)/100).to_s + ":"%><%if e.start_time%100<10%>0<%end%><%= (e.start_time%100).to_s %>
+								</div>
+							</div>
+							<div class="time-graph-event" style=<%= "width:" + (event_percent*100).to_s+"%" %>>
+								<div style="text-align:center;color:#f8f8f8;overflow:visible;z-index:2">
+									<%= ((e.duration - e.duration%100)/100).to_s + ":"%><%if e.duration%100<10%>0<%end%><%= (e.duration%100).to_s %>
+								</div>
+							</div>
+							<div class="time-graph-empty" style=<%= "width:" + (((1-event_percent)*100)/2).to_s+"%" %>>
+								<div style="text-align:right;margin-right:-40px">
+								<%= ((e.end_time - e.end_time%100)/100).to_s + ":"%><%if e.end_time%100<10%>0<%end%><%= (e.end_time%100).to_s %>
+								</div>
+
+							</div>
+						</div>
+
+					
+					
+					</div>
+				<% end %>
+				<script>
+					// alert($.parent());
+					$(".saved-event-button").click(function(evt) {
+						// alert($(this).attr("id"));
+						// evt.stopPropagation();
+						// $(".saved-event-button").find(".saved-event-button").css("background-color", "red");
+						$(this).find(".saved-event-add-button").trigger("click");	
+					});
+
+					$(".saved-event-add-button").click(function(evt) {
+						evt.stopPropagation();
+					});
+				</script>
+
 				</div>
 				
 	    	</div>
