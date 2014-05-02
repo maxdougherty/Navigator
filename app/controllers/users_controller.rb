@@ -332,11 +332,10 @@ class UsersController < ApplicationController
 		end
 		# Convert parameters to appropriate types
 		title = params[:title]
-		start_time = params[:start_time].to_i
-		end_time = params[:end_time].to_i
-		duration = params[:duration].to_i
+		start_time = params[:start_time].split(':').join("").to_i
+		end_time = params[:end_time].split(':').join("").to_i
+		duration = params[:duration].split(':').join("").to_i
 		address = params[:address]
-
 
 		# Validate inputs
 		if (title.length > MAX_TITLE_LENGTH)
