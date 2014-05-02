@@ -155,7 +155,7 @@ textarea {
 	position: absolute;
 	right:0%;
 	top:50px;
-	width:25%;
+	width:15%;
 	max-width:550px;
 	background-color:#FFFFFF;
 	min-width:400px;
@@ -187,7 +187,71 @@ textarea {
 	color:#00FF00;
 }
 
+/*Saved Event List Styles*/
+.saved-event-button {
+	margin:7.5px;
+	padding:0px;
+	border:1px solid #EEDDDD;
+	background-color: #f8f8f8;
+}
 
+.saved-event-button:hover {
+	background-color:#f0f0f0;
+}
+.saved-event-top {
+	display:block;
+	width:100%;
+	height:26px;
+}
+.saved-event-title {
+	display:inline;
+	margin:5px;
+	font-size:1.5em;
+}
+.saved-event-delete-button {
+	display:inline;
+}
+
+.saved-event-delete-button form {
+	display:inline;
+	float:right;
+}
+
+.saved-event-delete-button-input {
+	border-radius:0px;
+	border-bottom-left-radius:3px;
+}
+
+
+
+.saved-event-address {
+	margin-left:5px;
+}
+
+.time-graph {
+	padding-left:60px;
+	padding-right:60px;
+	padding-bottom:5px;
+	padding-top:2px;
+	height:28px;
+}
+.time-graph-empty {
+	height:100%;
+	display:inline-block;
+	background-color:#FFFFFF;
+	margin-right:-5px;
+	border:1px solid #B0C4DE;
+	overflow:visible;
+	z-index:-1;
+}
+.time-graph-event {
+	height:100%;
+	display:inline-block;
+	background-color:#428bca;
+	margin-right:-5px;
+	border:1px solid #B0C4DE;
+	overflow:visible;
+}
 
 
 
