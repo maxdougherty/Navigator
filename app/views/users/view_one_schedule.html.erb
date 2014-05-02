@@ -37,7 +37,7 @@
 
 				var map_canvas = document.getElementById('map_canvas')
 				var mapOptions = {
-			    	zoom: 12,
+			    	zoom: 5,
 			    	center: myLatlng,
 			    	panControl: false,
 				    zoomControlOptions: {
@@ -59,7 +59,7 @@
 		      	directionsDisplay = new google.maps.DirectionsRenderer();
 				var myLatlng = new google.maps.LatLng(37.8,-122.3);
 				var mapOptions = {
-					zoom: 10,
+					zoom: 15,
 				    center: myLatlng,
 				    panControl: false,
 				    zoomControlOptions: {
@@ -101,12 +101,14 @@
 		  		};
 		  		directionsService.route(request, function(response, status) {
 		    		if (status == google.maps.DirectionsStatus.OK) {
+		    			//directionsDisplay.setOptions({ preserveViewport: true});
 		      			directionsDisplay.setDirections(response);
 		    		}
 		  		});
 
 				  map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
 				  directionsDisplay.setMap(map);
+				  map.setCenter(end);
 				  directionsDisplay.setPanel(document.getElementById('directions-panel'));
 				}
 			}
