@@ -326,7 +326,11 @@ class UsersController < ApplicationController
 
     def format_time(time)
 		if(time.to_s[-2..-1].to_s == "pm")
-			time = (time.split(':')[0].to_i + 12).to_s + time.split(':')[1][0..-3]
+			if (time.to_s[0..1] == "12")
+				time = time.split(':')[0] + time.split(':')[1][0..-3]
+			else
+				time = (time.split(':')[0].to_i + 12).to_s + time.split(':')[1][0..-3]
+			end
 		elsif(time.to_s[-2..-1] == "am")
 			time = time.split(':')[0] + time.split(':')[1][0..-3]
 		else

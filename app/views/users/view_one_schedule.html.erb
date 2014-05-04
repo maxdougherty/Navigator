@@ -201,7 +201,7 @@
 		    			<p class="event_form_button_text navbar-text pull-left" id="view_schedule_button_text">
 		    				— Hide Schedule (<%= @schedule.title.capitalize %>)
 	    				</p>
-	    				<div class="event_form_button_text navbar-text pull-right" style="margin:7.5px">
+	    				<div class="event_form_button_text navbar-text pull-right"  id="roundtrip_button" style="margin:7.5px">
 							<%= form_tag("/users/view_one_schedule", method: "get", :class => "toggle_rt_button") do %>
 								<%= hidden_field_tag(:roundtrip, true) %>
 								<%= hidden_field_tag(:schedule_id, @schedule.id) %>
@@ -230,6 +230,12 @@
 					  } else {
 					  	$("#view_schedule_button_text").html("— Hide Schedule " + "(" + schedule_name + ")");
 					  }
+
+
+					});
+
+					$('#roundtrip_button').click(function (evt) {
+					  	evt.stopPropagation();
 					});
 				</script>
 					<div id="schedule_list">
@@ -463,17 +469,7 @@
 	    				</p>
     				</div>
 	    		</div>
-	    		<script>
-					$( "#add_new_event_button" ).click(function() {
-					  $( "#event_form" ).toggle( "blind" );
-					  var outstr = $("#add_new_event_button_text").html();
-					  if ($.trim(outstr) == "+ Add New Event") {
-					  	$("#add_new_event_button_text").html("— Add New Event");
-					  } else {
-					  	$("#add_new_event_button_text").html("+ Add New Event");
-					  }
-					});
-				</script>
+	    		
 	    		<div id="event_form" style="display:none; padding:7.5px;">
 					<% if not @errors.nil? %>
 						<h4> ERRORS: </h4>
@@ -507,6 +503,23 @@
 					<% end %>
 					<br>
 				</div>
+				<script>
+					$( "#add_new_event_button" ).click(function() {
+					  $( "#event_form" ).toggle( "blind" );
+					  var outstr = $("#add_new_event_button_text").html();
+					  if ($.trim(outstr) == "+ Add New Event") {
+					  	$("#add_new_event_button_text").html("— Add New Event");
+					  } else {
+					  	$("#add_new_event_button_text").html("+ Add New Event");
+					  }
+					  $('.time-input').timepicker();
+					  $('.duration-input').timepicker({   'timeFormat': 'H:i',
+						    'minTime': '12:15am',
+						    'maxTime': '11:30pm',
+						    'step': 15
+						});
+					});
+				</script>
 					<% if not @saved %>
 						<div class="event_form_button" id="add_saved_event_button">
 							<div class="navbar">
@@ -650,9 +663,6 @@
  				<script>
  					// alert($.parent());
  					$(".saved-event-button").click(function(evt) {
- 						// alert($(this).attr("id"));
- 						// evt.stopPropagation();
- 						// $(".saved-event-button").find(".saved-event-button").css("background-color", "red");
  						$(this).find(".saved-event-add-button").trigger("click");	
  					});
  
