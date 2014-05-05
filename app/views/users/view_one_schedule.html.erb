@@ -639,17 +639,27 @@
  							<% duration = (60*((duration -(duration % 100))/100)) + (duration % 100) %>
  							<% event_percent = ((duration*1.0)/range) %>
  							<div class="time-graph-empty" style=<%= "width:"+(((1-event_percent)*100)/2).to_s+"%" %>>
- 								<div style="text-align:left;margin-left:-38px">
+ 								<div style="float:left;margin-left:-38px">
  								<%= ((e.start_time - e.start_time%100)/100).to_s + ":"%><%if e.start_time%100<10%>0<%end%><%= (e.start_time%100).to_s %>
  								</div>
  							</div>
- 							<div class="time-graph-event" style=<%= "width:" + (event_percent*100).to_s+"%" %>>
- 								<div style="text-align:center;color:#f8f8f8;overflow:visible;z-index:2">
+	 							<div class="time-graph-event" style=<%= "width:" + (event_percent*100).to_s+"%" %>>
+		 							<% if (event_percent*100) > 15 %>
+		 								<div style="height:100%;float:left" id="event-duration-text">
+		 								</div>
+		 								<div style="float:left;color:#F8F8F8;">
+		 									<%= ((e.duration - e.duration%100)/100).to_s + ":"%><%if e.duration%100<10%>0<%end%><%= (e.duration%100).to_s %>
+		 								</div>
+		 							<% end %>
+	 							</div>
+ 						
+ 							<div class="time-graph-empty" style=<%= "width:" + (((1-event_percent)*100)/2).to_s+"%" %>>
+ 							<% if (event_percent*100) <= 15 %>
+ 								<div style="float:left;margin-left:2.5px">
  									<%= ((e.duration - e.duration%100)/100).to_s + ":"%><%if e.duration%100<10%>0<%end%><%= (e.duration%100).to_s %>
  								</div>
- 							</div>
- 							<div class="time-graph-empty" style=<%= "width:" + (((1-event_percent)*100)/2).to_s+"%" %>>
- 								<div style="text-align:right;margin-right:-40px">
+ 							<% end %>
+ 								<div style="float:right;margin-right:-40px">
  								<%= ((e.end_time - e.end_time%100)/100).to_s + ":"%><%if e.end_time%100<10%>0<%end%><%= (e.end_time%100).to_s %>
  								</div>
  

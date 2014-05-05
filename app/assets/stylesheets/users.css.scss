@@ -252,6 +252,11 @@ textarea {
 	border:1px solid #B0C4DE;
 	overflow:visible;
 }
+#event-duration-text {
+	width: -moz-calc(50% - 15px);
+  	width: -webkit-calc(50% - 15px);
+  	width: calc(50% - 15px);
+}
 
 
 
