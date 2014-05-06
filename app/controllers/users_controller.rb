@@ -53,6 +53,7 @@ class UsersController < ApplicationController
 		puts "SCHEDULE TYPE: " + itin_type.to_s
  		@errors = params[:errors]
  		@saved = params[:saved]
+ 		@add_new_event = params[:add_new_event]
 		@newest_schedule_event = params[:newest_schedule_event]
 		render :view_one_schedule
 	end
@@ -200,7 +201,7 @@ class UsersController < ApplicationController
 		# Redisplay the events page.
 		# TODO: update with redirect
 		@saved = true;
-		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors
+		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors, saved: @saved
 		return
 	end
 
@@ -344,10 +345,11 @@ class UsersController < ApplicationController
 		@schedule_errors = []
 		user_id = current_user.id
 		schedule_id = params[:schedule_id].to_i
+		@add_new_event = true
 
 		if params[:title].empty? || params[:start_time].empty? || params[:end_time].empty? || params[:address].empty?
 			@errors.push("Invalid Input: Non-filled fields")
-			redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors
+			redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors, add_new_event: @add_new_event
 			return
 		end
 		# Convert parameters to appropriate types
@@ -387,7 +389,7 @@ class UsersController < ApplicationController
 
 		# If any errors occur, reject event creation and display errors
 		if not @errors.empty?
-			redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors
+			redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors, add_new_event: @add_new_event
 			return
 		end
 
@@ -397,7 +399,7 @@ class UsersController < ApplicationController
 		if event.latitude.nil? || event.longitude.nil?
 			@errors.push("Invalid Location: Address could not be translated")
 			Schedule.find(schedule_id).events.find(event.id).destroy
-			redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors
+			redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors, add_new_event: @add_new_event
 			return
 		end
 
@@ -414,7 +416,7 @@ class UsersController < ApplicationController
 
 		@newest_schedule_event = event
 
-		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors, newest_schedule_event: @newest_schedule_event, saved: @saved
+		redirect_to :action => 'view_one_schedule', schedule_id: params[:schedule_id], errors: @errors, newest_schedule_event: @newest_schedule_event, saved: @saved, add_new_event: @add_new_event
 
 	end
 

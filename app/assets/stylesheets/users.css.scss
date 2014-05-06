@@ -261,6 +261,82 @@ textarea {
 
 
 
+/*Schedule Event List Styles*/
+.schedule-list {
+	margin:7.5px;
+	border:1px solid #EEDDDD;
+	border-bottom:0px solid #EEDDDD;
+}
+
+.schedule-event-item {
+	background-color: #f8f8f8;
+	border-bottom:1px solid #EEDDDD;
+	height:80px;
+}
+.schedule-event-item-top {
+	display:block;
+	padding:5px;
+	padding-bottom:0px;
+}
+.schedule-event-item-letter {
+	display:inline;
+	margin:0px;
+	margin-right:5px;
+	padding:0.5px;
+	padding-left:6px;
+	padding-right:0px;
+	font-size:1.5em;
+	border: 1px solid black;
+}
+.schedule-event-item-title {
+	display:inline;
+	font-size:1.5em;
+	margin:0px;
+}
+.schedule-event-item-delete {
+	display:inline;
+
+}
+
+.schedule-event-item-delete form {
+	display:inline;
+	float:right;
+	margin-right:-5px;
+	margin-top:-5px;
+}
+
+.schedule-event-item-address {
+	margin-left:5px;
+	font-size:1.1em;
+}
+.schedule-event-item-timegraph {
+	display:block;
+	margin-right:40px;
+	margin-left:40px;
+	height:20px;
+	border: 1px solid #B0C4DE ;
+
+}
+.schedule-event-graph-empty {
+	display:inline-block;
+	height:100%;
+	background-color:#FFF7EF;
+	margin-right:-5px;
+}
+.schedule-event-graph-filled {
+	display:inline-block;
+	height:100%;
+	background-color:#428bca;
+	margin-right:-5px;
+}
+
+.schedule-travel-text {
+	padding:5px;
+	text-align:center;
+	background-color:#FFFFFF;
+	border-bottom:1px solid #EEDDDD;
+	font-size:1.20em;
+}
 
 
 

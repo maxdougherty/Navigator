@@ -89,6 +89,13 @@ class Schedule < ActiveRecord::Base
     def find_sched_end()
         return this.events.order(end_time: :desc).first.end_time 
     end 
+
+    def self.find_schedule_start(sched)
+        return sched.events.order(start_time: :asc).first.start_time
+    end
+    def self.find_schedule_end(sched)
+        return sched.events.order(end_time: :desc).first.end_time 
+    end 
     
     # Find earliest start time in a list of events
     def self.earliest_start_time(event_list)

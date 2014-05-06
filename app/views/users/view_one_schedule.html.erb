@@ -85,15 +85,6 @@
 					<% end %>
 				<% end %>
 
-				//<% map_events.each_with_index do |e, index| %>
-					//<% if e.longitude %> > maxLong
-					//	maxLong = <%=e.longitude%>
-					//	maxLat = <%=e.latitude%>
-					//<% end %>
-				//<%end %>
-
-				//var extLat2 = new google.maps.LatLng(37.8 , -122.3);
-				//bounds.extend(extLat2);
 
 				<% map_events.each_with_index do |e, index| %>
 					var newLat = new google.maps.LatLng(<%=e.latitude%>, <%=e.longitude%>);
@@ -214,12 +205,12 @@
 	    				</div>
     				</div>
     				<div id="schedule_title" style="display:none;">
-    					<%= @schedule.title.capitalize %>
+    					<%= @schedule.title.split.map(&:capitalize).join(' ') %>
 					</div>
 	    		</div>
 	    		<script>
 					$( "#view_schedule_button" ).click(function() {
-					  $( "#schedule_list" ).toggle( "blind" );
+					  $( ".schedule-list" ).toggle( "blind" );
 					  $(".toggle_rt_button").toggle( "clip");
 					  var outstr = $("#view_schedule_button_text").html();
 					  outstr = $.trim(outstr);
@@ -238,7 +229,121 @@
 					  	evt.stopPropagation();
 					});
 				</script>
-					<div id="schedule_list">
+					<!-- JUMPOINT -->
+					<% edex = 64 %>
+				<div class="schedule-list">
+					<% @schedule_events.each_with_index do |n, index| %>
+						<% node_start = n.start %>
+						<% node_end = n.endtime %>
+						<% node_type = n.type %>
+						
+						
+						<% if node_type == 0 %>
+							<% e = n.event %>
+							<div class="schedule-event-item">
+								<div class="schedule-event-item-top">
+									<div class="schedule-event-item-letter">
+										<% edex += 1 %>
+										<b><%= " " + edex.chr %></b>
+									</div>
+									<div class="schedule-event-item-title">
+										<b style="white-space: nowrap; overflow: hidden;"><%= e.title.split.map(&:capitalize).join(' ') %></b>
+									</div>
+									<div class="schedule-event-item-delete">
+										<%= form_tag("/users/delete_event_from_schedule", method: "post") do %>
+											<%= hidden_field_tag(:event_id, e.id) %>
+											<%= hidden_field_tag(:schedule_id, @schedule.id) %>
+											<%= submit_tag('&times;'.html_safe, :class => "btn btn-md btn-warning saved-event-delete-button-input") %>
+										<% end %>
+									</div>
+								</div>
+								<div class="schedule-event-item-address">
+									<%= e.address.split.map(&:capitalize).join(' ') %>
+								</div>
+								<div class="schedule-event-item-timegraph">
+									<% event_list = Schedule.find_events(@schedule_events) %>
+									<% sched_start = @schedule_events[0].start %>
+									<% sched_end = @schedule_events[Schedule.lastevent(@schedule_events)].endtime %>
+		 							<% before = Schedule.time_between(sched_start,node_start) %>
+		 							<% during = Schedule.time_between(node_start,node_end) %>
+		 							<% after = Schedule.time_between(node_end, sched_end) %>
+		 							<% range = Schedule.time_between(sched_start,sched_end) %>
+		 							<% range = (60*((range -(range % 100))/100)) + (range % 100) %>
+
+		 							<% before = (60*((before -(before % 100))/100)) + (before % 100) %>
+		 							<% during = (60*((during -(during % 100))/100)) + (during % 100) %>
+		 							<% after = (60*((after -(after % 100))/100)) + (after % 100) %>
+
+		 							<% total = before + during + after %>
+		 							<% before = (before*1.0)/range %>
+		 							<% during = (during*1.0)/range %>
+		 							<% after = (after*1.0)/range %>
+
+									<div class="schedule-event-graph-empty" style=<%= "width:"+(before*100).to_s+"%" %>>
+										<div style="float:right;margin-right:5px">
+											<%= node_start %>
+										</div>
+									</div>
+									<div class="schedule-event-graph-filled" style=<%= "width:"+(during*100).to_s+"%" %>>
+										<div style="width:-moz-calc(50% - 10px);width:-webkit-calc(50% - 10px);width:calc(50% - 7.5px);height:15px;float:left;">
+										</div>
+										<div style="float:left;margin-left:0px;">
+										<span class="glyphicon glyphicon-arrow-right"></span>
+										</div>
+									</div>
+									<div class="schedule-event-graph-empty" style=<%= "width:"+(after*100).to_s+"%" %>>
+										<div style="float:left;margin-left:5px;">
+											<%= node_end %>
+										</div>
+									</div>
+								</div>
+							</div>
+						<% end %>
+						<% if node_type == 2 %>
+							<div class="schedule-travel-item">
+								<div class="schedule-travel-text" >
+									<b style="white-space: nowrap; overflow: hidden;">Travel:</b> <% if (n.duration-(n.duration%100))/100 > 0 %><%= (n.duration-(n.duration%100))/100 %> hr, <% end %><%= (n.duration % 100) %> minutes
+								</div>
+							</div>
+						<% end %>
+					<% end %>
+					<% if @schedule.has_events and (map_events.length > 1) %>
+						<% extra_travel = Schedule.travel_time(map_events[-2], map_events.last) %>
+						<% e = map_events.last %>
+						<!-- XXXXXX -->
+						<div class="schedule-travel-item">
+							<div class="schedule-travel-text" >
+								<b style="white-space: nowrap; overflow: hidden;">Travel:</b> <% if (extra_travel-(extra_travel%100))/100 > 0 %><%= (extra_travel-(extra_travel%100))/100 %> hr, <% end %><%= (extra_travel % 100) %> minutes
+							</div>
+						</div>
+						<% n = @schedule_events[Schedule.lastevent(@schedule_events)] %>
+						<div class="schedule-event-item" style="height:60px">
+							<div class="schedule-event-item-top">
+								<div class="schedule-event-item-letter">
+									<% edex += 1 %>
+									<b><%= " " + edex.chr %></b>
+								</div>
+								<div class="schedule-event-item-title">
+									<b style="white-space: nowrap; overflow: hidden;"><%= e.title.split.map(&:capitalize).join(' ') %></b>
+								</div>
+								<div style="padding:5px;float:right;font-size:1.2em">
+									<b>
+									<% arr_time = Schedule.time_plus_duration(n.endtime, extra_travel) %>
+									Arrival: <%= (arr_time-(arr_time%100))/100 %>:<%if(arr_time % 100)<10%>0<%end%><%= (arr_time % 100) %>
+									</b>
+								</div>
+								
+							</div>
+							<div class="schedule-event-item-address">
+								<%= e.address.split.map(&:capitalize).join(' ') %>
+							</div>
+
+						</div>
+					<% end %>
+
+
+				</div>
+					<div id="schedule_list" style="display:none;">
 						<% if not @schedule_errors.nil? %>
 							<h4> ERRORS: </h4>
 							<ul>
@@ -308,7 +413,7 @@
 											Travel:
 										</td>
 										<td class="view_event_list_text">
-											<% if (n.duration-(n.duration%100))/100 > 0 %><%= (n.duration-(n.duration%100))/100 %> hr, <% end %><%if(n.duration % 100)<10%>0<%end%><%= (n.duration % 100) %> minutes
+											<% if (n.duration-(n.duration%100))/100 > 0 %><%= (n.duration-(n.duration%100))/100 %> hr, <% end %><%= (n.duration % 100) %> minutes
 										</td>
 										<td class="view_event_list_text">
 											<!-- Empty because no number -->
@@ -441,9 +546,6 @@
 		    			<p class="event_form_button_text navbar-text pull-left" id="toggle-directions-button-text">
 		    				+ Show Directions
 						</p>
-						<p class="event_form_button_text navbar-text pull-left">
-
-						</p>
 					</div>
 	    		</div>
 	    		<script>
@@ -465,12 +567,19 @@
 	    		<div class="event_form_button" id="add_new_event_button">
 	    			<div class="navbar">
 		    			<p class="event_form_button_text navbar-text pull-left" id="add_new_event_button_text">
-		    				+ Add New Event
+		    				<% if @add_new_event %>
+					    		— Add New Event
+					    	<% else %>
+					    		+ Add New Event
+				    		<% end %>
 	    				</p>
     				</div>
 	    		</div>
-	    		
+	    	<% if @add_new_event %>
+	    		<div id="event_form" style="padding:7.5px;">
+	    	<% else %>
 	    		<div id="event_form" style="display:none; padding:7.5px;">
+    		<% end %>
 					<% if not @errors.nil? %>
 						<h4> ERRORS: </h4>
 						<ul>
@@ -520,25 +629,17 @@
 						});
 					});
 				</script>
-					<% if not @saved %>
-						<div class="event_form_button" id="add_saved_event_button">
-							<div class="navbar">
-				    			<p class="event_form_button_text navbar-text pull-left" id="add_saved_event_button_text">
-				    				+ Add Saved Event
-			    				</p>
-		    				</div>
-			    		</div>
-			    	<% else %>
-			    		<div class="event_form_button" id="add_saved_event_button">
-							<div class="navbar">
-				    			<p class="event_form_button_text navbar-text pull-left" id="add_saved_event_button_text">
-				    				— Add Saved Event
-			    				</p>
-		    				</div>
-			    		</div>
-			    	<% end %>
-
-			    
+					<div class="event_form_button" id="add_saved_event_button">
+						<div class="navbar">
+			    			<p class="event_form_button_text navbar-text pull-left" id="add_saved_event_button_text">
+			    				<% if not @saved %>
+			    					+ Add Saved Event
+		    					<% else %>
+		    						— Add Saved Event
+		    					<% end %>
+		    				</p>
+	    				</div>
+		    		</div>
 
 			    	<script>
 						$( "#add_saved_event_button" ).on("click",function() {
@@ -606,7 +707,7 @@
 				</tbody>
 				</table>
 
-
+				<!-- JUMPOINT -->
  				<% @user_events.each_with_index do |e, index| %>
  					<div class="saved-event-button" id=<%= "saved-event-"+index.to_s %>>
  						<div class="saved-event-top">
@@ -644,7 +745,7 @@
  								</div>
  							</div>
 	 							<div class="time-graph-event" style=<%= "width:" + (event_percent*100).to_s+"%" %>>
-		 							<% if (event_percent*100) > 15 %>
+		 							<% if (event_percent*100) > 11 %>
 		 								<div style="height:100%;float:left" id="event-duration-text">
 		 								</div>
 		 								<div style="float:left;color:#F8F8F8;">
@@ -654,7 +755,7 @@
 	 							</div>
  						
  							<div class="time-graph-empty" style=<%= "width:" + (((1-event_percent)*100)/2).to_s+"%" %>>
- 							<% if (event_percent*100) <= 15 %>
+ 							<% if (event_percent*100) <= 11 %>
  								<div style="float:left;margin-left:2.5px">
  									<%= ((e.duration - e.duration%100)/100).to_s + ":"%><%if e.duration%100<10%>0<%end%><%= (e.duration%100).to_s %>
  								</div>
